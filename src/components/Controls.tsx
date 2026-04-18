@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { RunnerStatus } from '../hooks/useSortRunner';
 import { cn } from '../lib/cn';
 
@@ -12,7 +13,7 @@ interface Props {
   onShuffle: () => void;
 }
 
-export function Controls({ status, canStepBack, canStepForward, onToggle, onStepBack, onStepForward, onReset, onShuffle }: Props) {
+export const Controls = memo(function Controls({ status, canStepBack, canStepForward, onToggle, onStepBack, onStepForward, onReset, onShuffle }: Props) {
   const playing = status === 'playing';
   const done = status === 'done';
   return (
@@ -49,7 +50,7 @@ export function Controls({ status, canStepBack, canStepForward, onToggle, onStep
       </IconButton>
     </div>
   );
-}
+});
 
 function IconButton({ children, disabled, onClick, ...rest }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
