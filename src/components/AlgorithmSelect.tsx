@@ -3,6 +3,7 @@ import type { SortAlgorithm } from '../algorithms/types';
 import { cn } from '../lib/cn';
 
 interface Props {
+  id?: string;
   algorithms: SortAlgorithm[];
   value: string;
   onChange: (id: string) => void;
@@ -14,7 +15,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   hybrid: 'Hybrid',
 };
 
-export function AlgorithmSelect({ algorithms, value, onChange }: Props) {
+export function AlgorithmSelect({ id, algorithms, value, onChange }: Props) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -52,6 +53,7 @@ export function AlgorithmSelect({ algorithms, value, onChange }: Props) {
   return (
     <div ref={containerRef} className="relative">
       <button
+        id={id}
         type="button"
         onClick={() => setOpen((v) => !v)}
         className="flex w-full items-center justify-between rounded-xl border border-pond-200 bg-white px-3 py-2 text-sm font-medium text-pond-900 shadow-sm focus:border-pond-400 focus:outline-none dark:border-pond-700 dark:bg-pond-900 dark:text-pond-50"

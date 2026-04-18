@@ -23,16 +23,19 @@ export function SettingsPanel({
 }: Props) {
   return (
     <div className="flex flex-col gap-4 rounded-3xl border border-pond-200/60 bg-white/70 p-5 shadow-soft backdrop-blur dark:border-pond-800/50 dark:bg-pond-900/50">
-      <Section label="Algorithm">
+      <Section label="Algorithm" htmlFor="setting-algorithm">
         <AlgorithmSelect
+          id="setting-algorithm"
           algorithms={algorithms}
           value={algorithmId}
           onChange={onAlgorithmChange}
         />
       </Section>
 
-      <Section label={`Items (${count})`}>
+      <Section label={`Items (${count})`} htmlFor="setting-count">
         <input
+          id="setting-count"
+          name="count"
           type="range"
           min={4}
           max={30}
@@ -42,8 +45,10 @@ export function SettingsPanel({
         />
       </Section>
 
-      <Section label={`Speed (${speed.toFixed(2)}×)`}>
+      <Section label={`Speed (${speed.toFixed(2)}×)`} htmlFor="setting-speed">
         <input
+          id="setting-speed"
+          name="speed"
           type="range"
           min={-2}
           max={4}
@@ -54,11 +59,12 @@ export function SettingsPanel({
       </Section>
 
       <Section label="Distribution">
-        <div className="grid grid-cols-2 gap-1 rounded-xl bg-pond-100/70 p-1 dark:bg-pond-800/60">
+        <div role="group" aria-label="Distribution" className="grid grid-cols-2 gap-1 rounded-xl bg-pond-100/70 p-1 dark:bg-pond-800/60">
           {DISTRIBUTIONS.map((d) => (
             <button
               key={d.id}
               type="button"
+              aria-pressed={distribution === d.id}
               onClick={() => onDistributionChange(d.id)}
               className={cn(
                 'rounded-lg px-2 py-1.5 text-xs font-medium transition',
@@ -73,14 +79,15 @@ export function SettingsPanel({
         </div>
       </Section>
 
-      <Section label="Sound">
-        <label className="flex cursor-pointer items-center justify-between rounded-xl bg-pond-100/70 px-3 py-2 text-sm font-medium text-pond-800 dark:bg-pond-800/60 dark:text-pond-100">
+      <Section label="Sound" htmlFor="setting-sound">
+        <label htmlFor="setting-sound" className="flex cursor-pointer items-center justify-between rounded-xl bg-pond-100/70 px-3 py-2 text-sm font-medium text-pond-800 dark:bg-pond-800/60 dark:text-pond-100">
           <span>Quack on swap, splash on compare</span>
           <span
             className={cn(
               'relative h-5 w-9 rounded-full transition',
               soundEnabled ? 'bg-duck-500' : 'bg-pond-300 dark:bg-pond-700',
             )}
+            aria-hidden="true"
           >
             <span
               className={cn(
@@ -90,6 +97,8 @@ export function SettingsPanel({
             />
           </span>
           <input
+            id="setting-sound"
+            name="sound"
             type="checkbox"
             className="sr-only"
             checked={soundEnabled}
@@ -101,10 +110,13 @@ export function SettingsPanel({
   );
 }
 
-function Section({ label, children }: { label: string; children: React.ReactNode }) {
+function Section({ label, htmlFor, children }: { label: string; htmlFor?: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-2">
-      <label className="text-xs font-semibold uppercase tracking-wide text-pond-600 dark:text-pond-300">
+      <label
+        htmlFor={htmlFor}
+        className="text-xs font-semibold uppercase tracking-wide text-pond-600 dark:text-pond-300"
+      >
         {label}
       </label>
       {children}
