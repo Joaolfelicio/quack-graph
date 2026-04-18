@@ -48,6 +48,26 @@ export function quack(value: number, maxValue: number): void {
   osc2.stop(t0 + 0.13);
 }
 
+export function drip(value: number, maxValue: number): void {
+  if (!gate()) return;
+  const c = getCtx();
+  if (!c) return;
+  const t0 = c.currentTime;
+  const freq = 300 + (value / Math.max(1, maxValue)) * 500;
+  const osc = c.createOscillator();
+  const gain = c.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(freq, t0);
+  osc.frequency.exponentialRampToValueAtTime(freq * 0.5, t0 + 0.07);
+  gain.gain.setValueAtTime(0.0001, t0);
+  gain.gain.exponentialRampToValueAtTime(0.08, t0 + 0.008);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.09);
+  osc.connect(gain);
+  gain.connect(c.destination);
+  osc.start(t0);
+  osc.stop(t0 + 0.1);
+}
+
 export function splash(value: number, maxValue: number): void {
   if (!gate()) return;
   const c = getCtx();

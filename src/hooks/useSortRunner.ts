@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
 import { ALGORITHMS_BY_ID } from '../algorithms';
 import type { HighlightRole, SortEvent } from '../algorithms/types';
 import { generate, type Distribution } from '../lib/distributions';
-import { quack, splash } from '../lib/sound';
+import { drip, quack, splash } from '../lib/sound';
 import { useAnimationFrame } from './useAnimationFrame';
 
 export interface RunnerItem {
@@ -421,6 +421,9 @@ export function useSortRunner(args: UseSortRunnerArgs) {
         } else if (ev.type === 'compare') {
           const v = state.items[ev.indices[0]]?.value ?? 1;
           splash(v, state.maxValue);
+        } else if (ev.type === 'overwrite') {
+          const v = state.items[ev.index]?.value ?? 1;
+          drip(v, state.maxValue);
         }
       }
     }
