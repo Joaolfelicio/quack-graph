@@ -19,7 +19,7 @@ export const Controls = memo(function Controls({ status, canStepBack, canStepFor
   return (
     <div className="flex items-center gap-2">
       <IconButton onClick={onStepBack} disabled={!canStepBack} aria-label="Step back">
-        <svg viewBox="0 0 24 24" width={18} height={18} fill="currentColor"><path d="M5 5v14M19 12L8 5v14z" /></svg>
+        <svg viewBox="0 0 24 24" width={18} height={18} fill="currentColor"><path d="M5 5v14M8 12L19 5v14z" /></svg>
       </IconButton>
       <button
         type="button"
@@ -39,7 +39,7 @@ export const Controls = memo(function Controls({ status, canStepBack, canStepFor
         )}
       </button>
       <IconButton onClick={onStepForward} disabled={!canStepForward} aria-label="Step forward">
-        <svg viewBox="0 0 24 24" width={18} height={18} fill="currentColor"><path d="M19 5v14M5 12L16 5v14z" /></svg>
+        <svg viewBox="0 0 24 24" width={18} height={18} fill="currentColor"><path d="M19 5v14M16 12L5 5v14z" /></svg>
       </IconButton>
       <span className="mx-2 h-6 w-px bg-pond-200 dark:bg-pond-700" />
       <IconButton onClick={onReset} aria-label="Reset">
