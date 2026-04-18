@@ -112,14 +112,14 @@ function buildSnapshots(baseItems: RunnerItem[], events: SortEvent[]): StateSnap
 }
 
 function rebuild(state: RunnerState, items: RunnerItem[], algorithmId: string): RunnerState {
-  const algo = ALGORITHMS_BY_ID[algorithmId];
+  const algo = ALGORITHMS_BY_ID[algorithmId] ?? ALGORITHMS_BY_ID['bubble'];
   const values = items.map((it) => it.value);
   const events = Array.from(algo.run(values));
   const maxValue = items.reduce((m, it) => Math.max(m, it.value), 1);
   const snapshots = buildSnapshots(items, events);
   return {
     ...state,
-    algorithmId,
+    algorithmId: algo.id,
     baseItems: items,
     items: items.slice(),
     events,
