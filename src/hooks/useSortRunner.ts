@@ -19,12 +19,22 @@ export interface RunnerStats {
   elapsedMs: number;
 }
 
+interface StateSnapshot {
+  stepIndex: number;
+  items: RunnerItem[];
+  stats: Omit<RunnerStats, 'elapsedMs'>;
+  highlights: Record<number, HighlightRole>;
+}
+
+const SNAPSHOT_INTERVAL = 100;
+
 export interface RunnerState {
   algorithmId: string;
   distribution: Distribution;
   count: number;
   baseItems: RunnerItem[];
   events: SortEvent[];
+  snapshots: StateSnapshot[];
   stepIndex: number;
   items: RunnerItem[];
   status: RunnerStatus;
@@ -49,17 +59,71 @@ type Action =
   | { type: 'step-back' }
   | { type: 'advance'; steps: number; dtMs: number };
 
+function buildSnapshots(baseItems: RunnerItem[], events: SortEvent[]): StateSnapshot[] {
+  const snapshots: StateSnapshot[] = [];
+  let items = baseItems.slice();
+  let highlights: Record<number, HighlightRole> = {};
+  let stats = { comparisons: 0, swaps: 0, writes: 0 };
+
+  snapshots.push({ stepIndex: 0, items: items.slice(), stats: { ...stats }, highlights: { ...highlights } });
+
+  for (let k = 0; k < events.length; k++) {
+    const ev = events[k];
+    switch (ev.type) {
+      case 'compare':
+        stats.comparisons += 1;
+        highlights[ev.indices[0]] = 'compare';
+        highlights[ev.indices[1]] = 'compare';
+        break;
+      case 'swap': {
+        const [i, j] = ev.indices;
+        [items[i], items[j]] = [items[j], items[i]];
+        stats.swaps += 1;
+        highlights[i] = 'swap';
+        highlights[j] = 'swap';
+        break;
+      }
+      case 'overwrite':
+        items[ev.index] = { ...items[ev.index], value: ev.value };
+        stats.writes += 1;
+        highlights[ev.index] = 'cursor';
+        break;
+      case 'mark-sorted':
+        highlights[ev.index] = 'sorted';
+        break;
+      case 'mark-all-sorted':
+        for (let i = 0; i < items.length; i++) highlights[i] = 'sorted';
+        break;
+      case 'highlight':
+        for (const idx of ev.indices) highlights[idx] = ev.role;
+        break;
+      case 'unhighlight':
+        for (const k2 of Object.keys(highlights)) {
+          const idx = Number(k2);
+          if (highlights[idx] !== 'sorted') delete highlights[idx];
+        }
+        break;
+    }
+    if ((k + 1) % SNAPSHOT_INTERVAL === 0) {
+      snapshots.push({ stepIndex: k + 1, items: items.slice(), stats: { ...stats }, highlights: { ...highlights } });
+    }
+  }
+  return snapshots;
+}
+
 function rebuild(state: RunnerState, items: RunnerItem[], algorithmId: string): RunnerState {
   const algo = ALGORITHMS_BY_ID[algorithmId];
   const values = items.map((it) => it.value);
   const events = Array.from(algo.run(values));
   const maxValue = items.reduce((m, it) => Math.max(m, it.value), 1);
+  const snapshots = buildSnapshots(items, events);
   return {
     ...state,
     algorithmId,
     baseItems: items,
     items: items.slice(),
     events,
+    snapshots,
     stepIndex: 0,
     status: 'idle',
     stats: { comparisons: 0, swaps: 0, writes: 0, elapsedMs: 0 },
@@ -138,37 +202,49 @@ function applyEvent(state: RunnerState, event: SortEvent, forward: boolean): Run
 }
 
 function recomputeFromScratch(state: RunnerState, targetIndex: number): RunnerState {
-  let items = state.baseItems.slice();
-  let highlights: Record<number, HighlightRole> = {};
-  let stats: RunnerStats = { comparisons: 0, swaps: 0, writes: 0, elapsedMs: state.stats.elapsedMs };
-  for (let k = 0; k < targetIndex; k++) {
+  const snapshotIdx = Math.floor(targetIndex / SNAPSHOT_INTERVAL);
+  const snap = state.snapshots[snapshotIdx] ?? state.snapshots[0];
+
+  let items = snap.items.slice();
+  let highlights: Record<number, HighlightRole> = { ...snap.highlights };
+  let stats: RunnerStats = { ...snap.stats, elapsedMs: state.stats.elapsedMs };
+
+  for (let k = snap.stepIndex; k < targetIndex; k++) {
     const ev = state.events[k];
     switch (ev.type) {
       case 'compare':
         stats.comparisons += 1;
+        highlights[ev.indices[0]] = 'compare';
+        highlights[ev.indices[1]] = 'compare';
         break;
       case 'swap': {
         const [i, j] = ev.indices;
         [items[i], items[j]] = [items[j], items[i]];
         stats.swaps += 1;
+        highlights[i] = 'swap';
+        highlights[j] = 'swap';
         break;
       }
       case 'overwrite':
         items[ev.index] = { ...items[ev.index], value: ev.value };
         stats.writes += 1;
+        highlights[ev.index] = 'cursor';
         break;
-      default:
+      case 'mark-sorted':
+        highlights[ev.index] = 'sorted';
         break;
-    }
-  }
-  // derive highlights from tail of events so UI isn't empty after scrubbing
-  for (let k = Math.max(0, targetIndex - 32); k < targetIndex; k++) {
-    const ev = state.events[k];
-    if (ev.type === 'mark-sorted') highlights[ev.index] = 'sorted';
-    else if (ev.type === 'mark-all-sorted') {
-      for (let i = 0; i < items.length; i++) highlights[i] = 'sorted';
-    } else if (ev.type === 'highlight') {
-      for (const idx of ev.indices) highlights[idx] = ev.role;
+      case 'mark-all-sorted':
+        for (let i = 0; i < items.length; i++) highlights[i] = 'sorted';
+        break;
+      case 'highlight':
+        for (const idx of ev.indices) highlights[idx] = ev.role;
+        break;
+      case 'unhighlight':
+        for (const k2 of Object.keys(highlights)) {
+          const idx = Number(k2);
+          if (highlights[idx] !== 'sorted') delete highlights[idx];
+        }
+        break;
     }
   }
   return { ...state, items, highlights, stats };
@@ -269,6 +345,7 @@ function makeInitialState(args: UseSortRunnerArgs): RunnerState {
     count: args.initialCount,
     baseItems: items,
     events: [],
+    snapshots: [],
     stepIndex: 0,
     items,
     status: 'idle',
