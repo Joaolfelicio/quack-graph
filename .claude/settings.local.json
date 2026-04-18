@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(npm test *)",
+      "Bash(npm run *)",
+      "Read(//home/joao/**)",
+      "Read(//home/joao/.config/**)",
+      "Bash(npm view *)",
+      "mcp__chrome-devtools__new_page",
+      "Bash(google-chrome --remote-debugging-port=9222 --headless=new http://localhost:5173/quack-sort/)",
+      "Bash(curl -s http://localhost:9222/json/version)",
+      "Bash(python3 -m json.tool)",
+      "Read(//usr/bin/**)",
+      "Read(//snap/**)",
+      "mcp__playwright__browser_navigate",
+      "Bash(npx playwright *)",
+      "Bash(~/.cache/ms-playwright/chromium-1217/chrome-linux/chrome --remote-debugging-port=9222 --headless=new --no-sandbox --disable-dev-shm-usage \"http://localhost:5173/quack-sort/\")",
+      "Bash(~/.cache/ms-playwright/chromium-1217/chrome-linux64/chrome --remote-debugging-port=9222 --headless=new --no-sandbox --disable-dev-shm-usage \"http://localhost:5173/quack-sort/\")",
+      "mcp__chrome-devtools__list_pages",
+      "Bash(pkill -f \"chrome --remote-debugging\")",
+      "Bash(npx @playwright/mcp --help)",
+      "mcp__github__create_repository",
+      "Bash(sudo dpkg *)",
+      "mcp__playwright__browser_take_screenshot",
+      "mcp__playwright__browser_snapshot",
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_select_option",
+      "mcp__playwright__browser_press_key",
+      "Bash(google-chrome --version)"
+    ]
+  }
+}

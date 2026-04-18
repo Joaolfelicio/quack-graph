@@ -1,0 +1,287 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - img [ref=e7]
+      - generic [ref=e12]:
+        - heading "Quack Sort" [level=1] [ref=e13]
+        - paragraph [ref=e14]: Sorting algorithms, visualized with stacks of ducks.
+    - generic [ref=e15]:
+      - link "GitHub" [ref=e16] [cursor=pointer]:
+        - /url: https://github.com
+      - button "Switch to dark mode" [ref=e17] [cursor=pointer]:
+        - img [ref=e18]
+  - generic [ref=e20]:
+    - generic [ref=e21]:
+      - generic [ref=e22]:
+        - generic [ref=e23]:
+          - heading "Bubble Sort" [level=2] [ref=e24]
+          - paragraph [ref=e25]: Repeatedly swap adjacent ducks if out of order. Big ducks bubble to the top.
+        - generic [ref=e27]:
+          - generic [ref=e28]:
+            - generic [ref=e29]: Best
+            - generic [ref=e30]: O(n)
+          - generic [ref=e31]:
+            - generic [ref=e32]: Average
+            - generic [ref=e33]: O(n²)
+          - generic [ref=e34]:
+            - generic [ref=e35]: Worst
+            - generic [ref=e36]: O(n²)
+          - generic [ref=e37]:
+            - generic [ref=e38]: Space
+            - generic [ref=e39]: O(1)
+          - generic [ref=e40]:
+            - generic [ref=e41]: ✓ Stable
+            - generic [ref=e42]: ✓ In-place
+      - generic [ref=e45]:
+        - generic [ref=e132]:
+          - generic [ref=e133]: "9"
+          - img [ref=e134]
+          - img [ref=e141]
+          - img [ref=e148]
+          - img [ref=e155]
+          - img [ref=e162]
+          - img [ref=e169]
+          - img [ref=e176]
+          - img [ref=e183]
+          - img [ref=e190]
+        - generic [ref=e46]:
+          - generic [ref=e47]: "12"
+          - img [ref=e48]
+          - img [ref=e55]
+          - img [ref=e62]
+          - img [ref=e69]
+          - img [ref=e76]
+          - img [ref=e83]
+          - img [ref=e90]
+          - img [ref=e97]
+          - img [ref=e104]
+          - img [ref=e111]
+          - img [ref=e118]
+          - img [ref=e125]
+        - generic [ref=e409]:
+          - generic [ref=e410]: "24"
+          - img [ref=e411]
+          - img [ref=e418]
+          - img [ref=e425]
+          - img [ref=e432]
+          - img [ref=e439]
+          - img [ref=e446]
+          - img [ref=e453]
+          - img [ref=e460]
+          - img [ref=e467]
+          - img [ref=e474]
+          - img [ref=e481]
+          - img [ref=e488]
+          - img [ref=e495]
+          - img [ref=e502]
+          - img [ref=e509]
+          - img [ref=e516]
+          - img [ref=e523]
+          - img [ref=e530]
+          - img [ref=e537]
+          - img [ref=e544]
+          - img [ref=e551]
+          - img [ref=e558]
+          - img [ref=e565]
+          - img [ref=e572]
+        - generic [ref=e579]:
+          - generic [ref=e580]: "6"
+          - img [ref=e581]
+          - img [ref=e588]
+          - img [ref=e595]
+          - img [ref=e602]
+          - img [ref=e609]
+          - img [ref=e616]
+        - generic [ref=e197]:
+          - generic [ref=e198]: "30"
+          - img [ref=e199]
+          - img [ref=e206]
+          - img [ref=e213]
+          - img [ref=e220]
+          - img [ref=e227]
+          - img [ref=e234]
+          - img [ref=e241]
+          - img [ref=e248]
+          - img [ref=e255]
+          - img [ref=e262]
+          - img [ref=e269]
+          - img [ref=e276]
+          - img [ref=e283]
+          - img [ref=e290]
+          - img [ref=e297]
+          - img [ref=e304]
+          - img [ref=e311]
+          - img [ref=e318]
+          - img [ref=e325]
+          - img [ref=e332]
+          - img [ref=e339]
+          - img [ref=e346]
+          - img [ref=e353]
+          - img [ref=e360]
+          - img [ref=e367]
+          - img [ref=e374]
+          - img [ref=e381]
+          - img [ref=e388]
+          - img [ref=e395]
+          - img [ref=e402]
+        - generic [ref=e623]:
+          - generic [ref=e624]: "15"
+          - img [ref=e625]
+          - img [ref=e632]
+          - img [ref=e639]
+          - img [ref=e646]
+          - img [ref=e653]
+          - img [ref=e660]
+          - img [ref=e667]
+          - img [ref=e674]
+          - img [ref=e681]
+          - img [ref=e688]
+          - img [ref=e695]
+          - img [ref=e702]
+          - img [ref=e709]
+          - img [ref=e716]
+          - img [ref=e723]
+        - generic [ref=e730]:
+          - generic [ref=e731]: "27"
+          - img [ref=e732]
+          - img [ref=e739]
+          - img [ref=e746]
+          - img [ref=e753]
+          - img [ref=e760]
+          - img [ref=e767]
+          - img [ref=e774]
+          - img [ref=e781]
+          - img [ref=e788]
+          - img [ref=e795]
+          - img [ref=e802]
+          - img [ref=e809]
+          - img [ref=e816]
+          - img [ref=e823]
+          - img [ref=e830]
+          - img [ref=e837]
+          - img [ref=e844]
+          - img [ref=e851]
+          - img [ref=e858]
+          - img [ref=e865]
+          - img [ref=e872]
+          - img [ref=e879]
+          - img [ref=e886]
+          - img [ref=e893]
+          - img [ref=e900]
+          - img [ref=e907]
+          - img [ref=e914]
+        - generic [ref=e921]:
+          - generic [ref=e922]: "18"
+          - img [ref=e923]
+          - img [ref=e930]
+          - img [ref=e937]
+          - img [ref=e944]
+          - img [ref=e951]
+          - img [ref=e958]
+          - img [ref=e965]
+          - img [ref=e972]
+          - img [ref=e979]
+          - img [ref=e986]
+          - img [ref=e993]
+          - img [ref=e1000]
+          - img [ref=e1007]
+          - img [ref=e1014]
+          - img [ref=e1021]
+          - img [ref=e1028]
+          - img [ref=e1035]
+          - img [ref=e1042]
+        - generic [ref=e1049]:
+          - generic [ref=e1050]: "3"
+          - img [ref=e1051]
+          - img [ref=e1058]
+          - img [ref=e1065]
+        - generic [ref=e1072]:
+          - generic [ref=e1073]: "21"
+          - img [ref=e1074]
+          - img [ref=e1081]
+          - img [ref=e1088]
+          - img [ref=e1095]
+          - img [ref=e1102]
+          - img [ref=e1109]
+          - img [ref=e1116]
+          - img [ref=e1123]
+          - img [ref=e1130]
+          - img [ref=e1137]
+          - img [ref=e1144]
+          - img [ref=e1151]
+          - img [ref=e1158]
+          - img [ref=e1165]
+          - img [ref=e1172]
+          - img [ref=e1179]
+          - img [ref=e1186]
+          - img [ref=e1193]
+          - img [ref=e1200]
+          - img [ref=e1207]
+          - img [ref=e1214]
+      - generic [ref=e1221]:
+        - generic [ref=e1222]:
+          - generic [ref=e1223]:
+            - generic [ref=e1224]: Comparisons
+            - generic [ref=e1225]: "4"
+          - generic [ref=e1226]:
+            - generic [ref=e1227]: Swaps
+            - generic [ref=e1228]: "3"
+          - generic [ref=e1229]:
+            - generic [ref=e1230]: Writes
+            - generic [ref=e1231]: "0"
+          - generic [ref=e1232]:
+            - generic [ref=e1233]: Elapsed
+            - generic [ref=e1234]: 0.25s
+          - generic [ref=e1236]: 8%
+        - generic [ref=e1238]:
+          - generic [ref=e1239]:
+            - button "Step back" [ref=e1240] [cursor=pointer]:
+              - img [ref=e1241]
+            - button "Pause" [active] [ref=e1285] [cursor=pointer]:
+              - img [ref=e1244]
+            - button "Step forward" [ref=e1246] [cursor=pointer]:
+              - img [ref=e1247]
+            - button "Reset" [ref=e1250] [cursor=pointer]:
+              - img [ref=e1251]
+            - button "Shuffle" [ref=e1254] [cursor=pointer]:
+              - img [ref=e1255]
+          - paragraph [ref=e1257]: Space play/pause · ←/→ step · S shuffle · R reset
+    - complementary [ref=e1258]:
+      - generic [ref=e1259]:
+        - generic [ref=e1260]:
+          - generic [ref=e1261]: Algorithm
+          - combobox [ref=e1262]:
+            - option "Bubble Sort" [selected]
+            - option "Cocktail Shaker Sort"
+            - option "Insertion Sort"
+            - option "Selection Sort"
+            - option "Gnome Sort"
+            - option "Odd-Even (Brick) Sort"
+            - option "Comb Sort"
+            - option "Shell Sort"
+            - option "Merge Sort"
+            - option "Quick Sort"
+            - option "Heap Sort"
+            - option "Pancake Sort"
+            - option "Counting Sort"
+            - option "Radix Sort (LSD)"
+            - option "Bucket Sort"
+        - generic [ref=e1263]:
+          - generic [ref=e1264]: Items (10)
+          - slider [ref=e1265] [cursor=pointer]: "10"
+        - generic [ref=e1266]:
+          - generic [ref=e1267]: Speed (1.00×)
+          - slider [ref=e1268] [cursor=pointer]: "0"
+        - generic [ref=e1269]:
+          - generic [ref=e1270]: Distribution
+          - generic [ref=e1271]:
+            - button "Random" [ref=e1272] [cursor=pointer]
+            - button "Nearly sorted" [ref=e1273] [cursor=pointer]
+            - button "Reversed" [ref=e1274] [cursor=pointer]
+            - button "Few unique" [ref=e1275] [cursor=pointer]
+        - generic [ref=e1276]:
+          - generic [ref=e1277]: Sound
+          - generic [ref=e1278] [cursor=pointer]:
+            - generic [ref=e1279]: Quack on swap, splash on compare
+            - checkbox "Quack on swap, splash on compare" [ref=e1282]
+  - contentinfo [ref=e1283]: Built with React, TypeScript, Tailwind & far too many ducks.

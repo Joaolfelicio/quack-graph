@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light dark;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  @apply font-sans text-pond-900 dark:text-pond-50 antialiased;
+  background-image:
+    radial-gradient(1200px 600px at 10% -10%, rgba(44, 192, 255, 0.18), transparent 60%),
+    radial-gradient(800px 500px at 110% 10%, rgba(255, 198, 31, 0.18), transparent 60%);
+}
+
+.dark body {
+  background-image:
+    radial-gradient(1200px 600px at 10% -10%, rgba(0, 105, 161, 0.35), transparent 60%),
+    radial-gradient(800px 500px at 110% 10%, rgba(183, 87, 6, 0.25), transparent 60%);
+}
+
+/* Pretty focus ring */
+:focus-visible {
+  @apply outline-none ring-2 ring-pond-400 ring-offset-2 ring-offset-pond-50 dark:ring-offset-pond-950 rounded-md;
+}
+
+/* Range sliders */
+input[type='range'] {
+  @apply h-2 w-full cursor-pointer appearance-none rounded-full bg-pond-200 dark:bg-pond-800;
+}
+input[type='range']::-webkit-slider-thumb {
+  @apply h-4 w-4 appearance-none rounded-full bg-duck-400 shadow-md transition;
+  -webkit-appearance: none;
+}
+input[type='range']::-moz-range-thumb {
+  @apply h-4 w-4 appearance-none rounded-full border-0 bg-duck-400 shadow-md;
+}

@@ -1,0 +1,191 @@
+import { useEffect, useMemo, useState } from 'react';
+import { ALGORITHMS, ALGORITHMS_BY_ID } from '../algorithms';
+import { useDarkMode } from '../hooks/useDarkMode';
+import { useSortRunner } from '../hooks/useSortRunner';
+import type { Distribution } from '../lib/distributions';
+import { ComplexityBadges } from './ComplexityBadges';
+import { Controls } from './Controls';
+import { SettingsPanel } from './SettingsPanel';
+import { StatsBar } from './StatsBar';
+import { ThemeToggle } from './ThemeToggle';
+import { Visualizer } from './Visualizer';
+
+const LS = {
+  algorithm: 'qs:algorithm',
+  count: 'qs:count',
+  speed: 'qs:speed',
+  dist: 'qs:dist',
+  sound: 'qs:sound',
+};
+
+function readNumber(key: string, fallback: number): number {
+  if (typeof window === 'undefined') return fallback;
+  const v = localStorage.getItem(key);
+  if (!v) return fallback;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : fallback;
+}
+function readString<T extends string>(key: string, fallback: T, allowed: readonly T[]): T {
+  if (typeof window === 'undefined') return fallback;
+  const v = localStorage.getItem(key);
+  return (allowed as readonly string[]).includes(v ?? '') ? (v as T) : fallback;
+}
+function readBool(key: string, fallback: boolean): boolean {
+  if (typeof window === 'undefined') return fallback;
+  const v = localStorage.getItem(key);
+  if (v === 'true') return true;
+  if (v === 'false') return false;
+  return fallback;
+}
+
+const DISTS: readonly Distribution[] = ['random', 'nearly-sorted', 'reversed', 'few-unique'] as const;
+
+export function App() {
+  const { theme, toggle } = useDarkMode();
+
+  const initialAlgorithmId = useMemo(() => {
+    const stored = typeof window !== 'undefined' ? localStorage.getItem(LS.algorithm) : null;
+    if (stored && ALGORITHMS_BY_ID[stored]) return stored;
+    return 'bubble';
+  }, []);
+  const initialCount = useMemo(() => Math.min(30, Math.max(8, Math.round(readNumber(LS.count, 10)))), []);
+  const initialSpeed = useMemo(() => Math.min(16, Math.max(0.25, readNumber(LS.speed, 1))), []);
+  const initialDistribution = useMemo(
+    () => readString<Distribution>(LS.dist, 'random', DISTS),
+    [],
+  );
+  const [soundEnabled, setSoundEnabled] = useState(() => readBool(LS.sound, false));
+
+  const { state, actions, toggle: togglePlay } = useSortRunner({
+    initialAlgorithmId,
+    initialDistribution,
+    initialCount,
+    initialSpeed,
+    soundEnabled,
+  });
+
+  const algorithm = ALGORITHMS_BY_ID[state.algorithmId];
+
+  // Persist settings
+  useEffect(() => { localStorage.setItem(LS.algorithm, state.algorithmId); }, [state.algorithmId]);
+  useEffect(() => { localStorage.setItem(LS.count, String(state.count)); }, [state.count]);
+  useEffect(() => { localStorage.setItem(LS.speed, String(state.speed)); }, [state.speed]);
+  useEffect(() => { localStorage.setItem(LS.dist, state.distribution); }, [state.distribution]);
+  useEffect(() => { localStorage.setItem(LS.sound, String(soundEnabled)); }, [soundEnabled]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.target as HTMLElement)?.tagName === 'INPUT' || (e.target as HTMLElement)?.tagName === 'SELECT') return;
+      if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
+      else if (e.key === 'ArrowRight') { e.preventDefault(); actions.stepForward(); }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); actions.stepBack(); }
+      else if (e.key.toLowerCase() === 'r') actions.reset();
+      else if (e.key.toLowerCase() === 's') actions.shuffle();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [actions, togglePlay]);
+
+  return (
+    <div className="mx-auto flex min-h-screen max-w-7xl flex-col gap-4 p-4 sm:p-6 lg:p-8">
+      <header className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <LogoDuck />
+          <div>
+            <h1 className="text-2xl font-extrabold tracking-tight text-pond-900 dark:text-pond-50 sm:text-3xl">
+              Quack Sort
+            </h1>
+            <p className="text-xs text-pond-600 dark:text-pond-300 sm:text-sm">
+              Sorting algorithms, visualized with stacks of ducks.
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <a
+            href="https://github.com"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="hidden h-10 items-center gap-1 rounded-full bg-white/70 px-3 text-sm font-medium text-pond-800 shadow-soft ring-1 ring-pond-200/60 backdrop-blur hover:bg-white sm:inline-flex dark:bg-pond-800/70 dark:text-pond-100 dark:ring-pond-700/60 dark:hover:bg-pond-800"
+          >
+            GitHub
+          </a>
+          <ThemeToggle theme={theme} onToggle={toggle} />
+        </div>
+      </header>
+
+      <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-[1fr_320px]">
+        <section className="flex flex-col gap-3">
+          <div className="rounded-3xl border border-pond-200/60 bg-white/60 p-4 shadow-soft backdrop-blur dark:border-pond-800/50 dark:bg-pond-900/50">
+            <div className="flex flex-col gap-1">
+              <h2 className="text-lg font-bold text-pond-900 dark:text-pond-50">{algorithm.name}</h2>
+              <p className="text-sm text-pond-700 dark:text-pond-200">{algorithm.blurb}</p>
+            </div>
+            <div className="mt-3">
+              <ComplexityBadges algorithm={algorithm} />
+            </div>
+          </div>
+
+          <div className="flex-1 min-h-[360px] sm:min-h-[420px] lg:min-h-[480px]">
+            <Visualizer items={state.items} highlights={state.highlights} maxValue={state.maxValue} />
+          </div>
+
+          <div className="flex flex-col gap-3 rounded-3xl border border-pond-200/60 bg-white/70 p-4 shadow-soft backdrop-blur dark:border-pond-800/50 dark:bg-pond-900/50">
+            <StatsBar stats={state.stats} totalSteps={state.events.length} stepIndex={state.stepIndex} />
+            <div className="flex items-center justify-between gap-3">
+              <Controls
+                status={state.status}
+                canStepBack={state.stepIndex > 0}
+                canStepForward={state.stepIndex < state.events.length}
+                onToggle={togglePlay}
+                onStepBack={actions.stepBack}
+                onStepForward={actions.stepForward}
+                onReset={actions.reset}
+                onShuffle={actions.shuffle}
+              />
+              <p className="hidden text-xs text-pond-600 dark:text-pond-300 sm:block">
+                <kbd className="rounded bg-pond-100 px-1 py-0.5 font-mono text-[10px] dark:bg-pond-800">Space</kbd> play/pause ·{' '}
+                <kbd className="rounded bg-pond-100 px-1 py-0.5 font-mono text-[10px] dark:bg-pond-800">←/→</kbd> step ·{' '}
+                <kbd className="rounded bg-pond-100 px-1 py-0.5 font-mono text-[10px] dark:bg-pond-800">S</kbd> shuffle ·{' '}
+                <kbd className="rounded bg-pond-100 px-1 py-0.5 font-mono text-[10px] dark:bg-pond-800">R</kbd> reset
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <aside className="lg:sticky lg:top-4 lg:self-start">
+          <SettingsPanel
+            algorithms={ALGORITHMS}
+            algorithmId={state.algorithmId}
+            distribution={state.distribution}
+            count={state.count}
+            speed={state.speed}
+            soundEnabled={soundEnabled}
+            onAlgorithmChange={actions.setAlgorithm}
+            onDistributionChange={actions.setDistribution}
+            onCountChange={actions.setCount}
+            onSpeedChange={actions.setSpeed}
+            onSoundToggle={setSoundEnabled}
+          />
+        </aside>
+      </div>
+
+      <footer className="pt-2 text-center text-xs text-pond-600 dark:text-pond-400">
+        Built with React, TypeScript, Tailwind & far too many ducks.
+      </footer>
+    </div>
+  );
+}
+
+function LogoDuck() {
+  return (
+    <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-duck-400 shadow-soft ring-1 ring-duck-500/40">
+      <svg viewBox="0 0 64 40" width={30} height={20} aria-hidden>
+        <ellipse cx="28" cy="26" rx="22" ry="12" fill="#fff8d2" />
+        <circle cx="46" cy="16" r="10" fill="#fff8d2" />
+        <polygon points="54,14 64,13 64,20 54,20" fill="#dd7d02" />
+        <circle cx="49" cy="13" r="1.6" fill="#0c4a6e" />
+      </svg>
+    </span>
+  );
+}
