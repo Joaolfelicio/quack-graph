@@ -157,7 +157,7 @@ export function App() {
                 { color: 'bg-violet-400', label: 'Write' },
                 { color: 'bg-emerald-400', label: 'Sorted' },
               ].map(({ color, label }) => (
-                <span key={label} className="flex items-center gap-1 text-[10px] text-pond-600 dark:text-pond-300">
+                <span key={label} className="flex items-center gap-1 text-xs text-pond-600 dark:text-pond-300">
                   <span className={`inline-block h-2.5 w-2.5 rounded-full ${color} opacity-80`} />
                   {label}
                 </span>
