@@ -5,6 +5,7 @@ import { useSortRunner } from '../hooks/useSortRunner';
 import type { Distribution } from '../lib/distributions';
 import { ComplexityBadges } from './ComplexityBadges';
 import { Controls } from './Controls';
+import { MobileSettingsSheet } from './MobileSettingsSheet';
 import { SettingsPanel } from './SettingsPanel';
 import { StatsBar } from './StatsBar';
 import { ThemeToggle } from './ThemeToggle';
@@ -55,6 +56,7 @@ export function App() {
     [],
   );
   const [soundEnabled, setSoundEnabled] = useState(() => readBool(LS.sound, false));
+  const [mobileSettingsOpen, setMobileSettingsOpen] = useState(false);
 
   const { state, actions, toggle: togglePlay } = useSortRunner({
     initialAlgorithmId,
@@ -153,7 +155,7 @@ export function App() {
           </div>
         </section>
 
-        <aside className="lg:sticky lg:top-4 lg:self-start">
+        <aside className="hidden lg:sticky lg:top-4 lg:block lg:self-start">
           <SettingsPanel
             algorithms={ALGORITHMS}
             algorithmId={state.algorithmId}
@@ -169,6 +171,35 @@ export function App() {
           />
         </aside>
       </div>
+
+      {/* Mobile floating settings button */}
+      <button
+        type="button"
+        onClick={() => setMobileSettingsOpen(true)}
+        aria-label="Open settings"
+        className="fixed bottom-5 right-5 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-duck-400 shadow-lg ring-2 ring-duck-500/40 transition hover:bg-duck-500 lg:hidden"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6 text-white" aria-hidden="true">
+          <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" />
+          <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
+        </svg>
+      </button>
+
+      <MobileSettingsSheet
+        open={mobileSettingsOpen}
+        onClose={() => setMobileSettingsOpen(false)}
+        algorithms={ALGORITHMS}
+        algorithmId={state.algorithmId}
+        distribution={state.distribution}
+        count={state.count}
+        speed={state.speed}
+        soundEnabled={soundEnabled}
+        onAlgorithmChange={actions.setAlgorithm}
+        onDistributionChange={actions.setDistribution}
+        onCountChange={actions.setCount}
+        onSpeedChange={actions.setSpeed}
+        onSoundToggle={setSoundEnabled}
+      />
 
       <footer className="pt-2 text-center text-xs text-pond-600 dark:text-pond-400">
         Built with React, TypeScript, Tailwind & far too many ducks.
