@@ -15,11 +15,13 @@ interface Props {
   onCountChange: (n: number) => void;
   onSpeedChange: (s: number) => void;
   onSoundToggle: (on: boolean) => void;
+  onResetSettings: () => void;
 }
 
 export function SettingsPanel({
   algorithms, algorithmId, distribution, count, speed, soundEnabled,
   onAlgorithmChange, onDistributionChange, onCountChange, onSpeedChange, onSoundToggle,
+  onResetSettings,
 }: Props) {
   return (
     <div className="flex flex-col gap-4 rounded-3xl border border-pond-200/60 bg-white/70 p-5 shadow-soft backdrop-blur dark:border-pond-800/50 dark:bg-pond-900/50">
@@ -106,6 +108,13 @@ export function SettingsPanel({
           />
         </label>
       </Section>
+      <button
+        type="button"
+        onClick={onResetSettings}
+        className="mt-1 w-full rounded-xl border border-pond-200 bg-pond-50/80 px-3 py-2 text-xs font-medium text-pond-600 transition hover:bg-pond-100 dark:border-pond-700 dark:bg-pond-800/60 dark:text-pond-300 dark:hover:bg-pond-800"
+      >
+        Reset to defaults
+      </button>
     </div>
   );
 }

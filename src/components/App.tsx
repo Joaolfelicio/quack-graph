@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ALGORITHMS, ALGORITHMS_BY_ID } from '../algorithms';
 import { useDarkMode } from '../hooks/useDarkMode';
 import { useSortRunner } from '../hooks/useSortRunner';
@@ -74,6 +74,14 @@ export function App() {
   });
 
   const algorithm = ALGORITHMS_BY_ID[state.algorithmId];
+
+  const handleResetSettings = useCallback(() => {
+    actions.setAlgorithm('bubble');
+    actions.setCount(20);
+    actions.setSpeed(1);
+    actions.setDistribution('random');
+    setSoundEnabled(false);
+  }, [actions]);
 
   // Persist settings
   useEffect(() => { localStorage.setItem(LS.algorithm, state.algorithmId); }, [state.algorithmId]);
@@ -175,6 +183,7 @@ export function App() {
             onCountChange={actions.setCount}
             onSpeedChange={actions.setSpeed}
             onSoundToggle={setSoundEnabled}
+            onResetSettings={handleResetSettings}
           />
         </aside>
       </main>
@@ -206,6 +215,7 @@ export function App() {
         onCountChange={actions.setCount}
         onSpeedChange={actions.setSpeed}
         onSoundToggle={setSoundEnabled}
+        onResetSettings={handleResetSettings}
       />
 
       <footer className="pt-2 text-center text-xs text-pond-600 dark:text-pond-400">

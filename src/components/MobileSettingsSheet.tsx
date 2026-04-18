@@ -17,6 +17,7 @@ interface Props {
   onCountChange: (n: number) => void;
   onSpeedChange: (s: number) => void;
   onSoundToggle: (on: boolean) => void;
+  onResetSettings: () => void;
 }
 
 export function MobileSettingsSheet({ open, onClose, ...panelProps }: Props) {
