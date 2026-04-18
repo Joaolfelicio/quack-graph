@@ -123,9 +123,9 @@ export function App() {
         </div>
       </header>
 
-      <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-[1fr_320px]">
-        <section className="flex flex-col gap-3">
-          <div className="rounded-3xl border border-pond-200/60 bg-white/60 p-4 shadow-soft backdrop-blur dark:border-pond-800/50 dark:bg-pond-900/50">
+      <main className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-[1fr_320px]">
+        <section aria-label="Sorting visualizer" className="flex flex-col gap-3">
+          <article className="rounded-3xl border border-pond-200/60 bg-white/60 p-4 shadow-soft backdrop-blur dark:border-pond-800/50 dark:bg-pond-900/50">
             <div className="flex flex-col gap-1">
               <h2 className="text-lg font-bold text-pond-900 dark:text-pond-50">{algorithm.name}</h2>
               <p className="text-sm text-pond-700 dark:text-pond-200">{algorithm.blurb}</p>
@@ -133,7 +133,7 @@ export function App() {
             <div className="mt-3">
               <ComplexityBadges algorithm={algorithm} />
             </div>
-          </div>
+          </article>
 
           <div className="flex-1 min-h-[360px] sm:min-h-[420px] lg:min-h-[480px]">
             <Visualizer items={state.items} highlights={state.highlights} maxValue={state.maxValue} />
@@ -177,7 +177,7 @@ export function App() {
             onSoundToggle={setSoundEnabled}
           />
         </aside>
-      </div>
+      </main>
 
       {/* Mobile floating settings button */}
       <button
