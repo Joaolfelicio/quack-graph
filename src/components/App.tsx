@@ -39,7 +39,7 @@ function readBool(key: string, fallback: boolean): boolean {
   return fallback;
 }
 
-const DISTS: readonly Distribution[] = ['random', 'nearly-sorted', 'reversed', 'few-unique'] as const;
+const DISTS: readonly Distribution[] = ['random', 'nearly-sorted', 'reversed', 'few-unique', 'custom'] as const;
 
 export function App() {
   const { theme, toggle } = useDarkMode();
@@ -201,6 +201,7 @@ export function App() {
             onSpeedChange={actions.setSpeed}
             onSoundToggle={setSoundEnabled}
             onResetSettings={handleResetSettings}
+            onCustomApply={actions.setCustomItems}
           />
         </aside>
       </main>
@@ -233,6 +234,7 @@ export function App() {
         onSpeedChange={actions.setSpeed}
         onSoundToggle={setSoundEnabled}
         onResetSettings={handleResetSettings}
+        onCustomApply={actions.setCustomItems}
       />
 
       <footer className="pt-2 text-center text-xs text-pond-600 dark:text-pond-400">

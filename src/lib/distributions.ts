@@ -1,4 +1,4 @@
-export type Distribution = 'random' | 'nearly-sorted' | 'reversed' | 'few-unique';
+export type Distribution = 'random' | 'nearly-sorted' | 'reversed' | 'few-unique' | 'custom';
 
 export const DISTRIBUTIONS: { id: Distribution; label: string }[] = [
   { id: 'random', label: 'Random' },
@@ -33,6 +33,8 @@ export function generate(distribution: Distribution, count: number, maxValue = 3
       );
       return shuffle(Array.from({ length: count }, () => palette[Math.floor(Math.random() * buckets)]));
     }
+    case 'custom':
+      return shuffle(values);
   }
 }
 

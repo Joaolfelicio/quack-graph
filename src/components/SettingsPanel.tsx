@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { SortAlgorithm } from '../algorithms/types';
 import { DISTRIBUTIONS, type Distribution } from '../lib/distributions';
 import { cn } from '../lib/cn';
@@ -16,13 +17,37 @@ interface Props {
   onSpeedChange: (s: number) => void;
   onSoundToggle: (on: boolean) => void;
   onResetSettings: () => void;
+  onCustomApply: (values: number[]) => void;
+}
+
+function parseCustomInput(raw: string): { values: number[]; error: string | null } {
+  if (!raw.trim()) return { values: [], error: null };
+  const parts = raw.split(',').map((s) => s.trim()).filter(Boolean);
+  const values = parts.map((s) => {
+    const n = Number(s);
+    return Number.isInteger(n) && n >= 1 && n <= 30 ? n : NaN;
+  });
+  if (values.some(isNaN)) return { values: [], error: 'Use integers 1–30, separated by commas.' };
+  if (values.length < 4 || values.length > 30) return { values: [], error: 'Enter between 4 and 30 numbers.' };
+  return { values, error: null };
 }
 
 export function SettingsPanel({
   algorithms, algorithmId, distribution, count, speed, soundEnabled,
   onAlgorithmChange, onDistributionChange, onCountChange, onSpeedChange, onSoundToggle,
-  onResetSettings,
+  onResetSettings, onCustomApply,
 }: Props) {
+  const [customInput, setCustomInput] = useState('');
+  const [customError, setCustomError] = useState<string | null>(null);
+
+  function handleCustomApply() {
+    const { values, error } = parseCustomInput(customInput);
+    if (error) { setCustomError(error); return; }
+    if (values.length === 0) { setCustomError('Enter some numbers first.'); return; }
+    setCustomError(null);
+    onCustomApply(values);
+  }
+
   return (
     <div className="flex flex-col gap-4 rounded-3xl border border-pond-200/60 bg-white/70 p-5 shadow-soft backdrop-blur dark:border-pond-800/50 dark:bg-pond-900/50">
       <Section label="Algorithm" htmlFor="setting-algorithm">
@@ -43,7 +68,9 @@ export function SettingsPanel({
           max={30}
           step={1}
           value={count}
+          disabled={distribution === 'custom'}
           onChange={(e) => onCountChange(Number(e.target.value))}
+          className={distribution === 'custom' ? 'opacity-40' : ''}
         />
       </Section>
 
@@ -78,7 +105,42 @@ export function SettingsPanel({
               {d.label}
             </button>
           ))}
+          <button
+            type="button"
+            aria-pressed={distribution === 'custom'}
+            onClick={() => onDistributionChange('custom')}
+            className={cn(
+              'col-span-2 rounded-lg px-2 py-1.5 text-xs font-medium transition',
+              distribution === 'custom'
+                ? 'bg-white text-pond-900 shadow dark:bg-pond-900 dark:text-pond-50'
+                : 'text-pond-700 hover:bg-white/60 dark:text-pond-200 dark:hover:bg-pond-900/60',
+            )}
+          >
+            Custom
+          </button>
         </div>
+        {distribution === 'custom' && (
+          <div className="flex flex-col gap-1.5">
+            <div className="flex gap-1.5">
+              <input
+                type="text"
+                value={customInput}
+                onChange={(e) => { setCustomInput(e.target.value); setCustomError(null); }}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleCustomApply(); }}
+                placeholder="5, 2, 9, 1, 5, 6"
+                className="min-w-0 flex-1 rounded-lg border border-pond-200 bg-pond-50 px-2.5 py-1.5 text-xs text-pond-900 placeholder-pond-400 outline-none focus:border-duck-400 focus:ring-1 focus:ring-duck-400 dark:border-pond-700 dark:bg-pond-800 dark:text-pond-50 dark:placeholder-pond-500"
+              />
+              <button
+                type="button"
+                onClick={handleCustomApply}
+                className="shrink-0 rounded-lg bg-duck-400 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-duck-500"
+              >
+                Apply
+              </button>
+            </div>
+            {customError && <p className="text-[10px] text-rose-600 dark:text-rose-400">{customError}</p>}
+          </div>
+        )}
       </Section>
 
       <Section label="Sound" htmlFor="setting-sound">

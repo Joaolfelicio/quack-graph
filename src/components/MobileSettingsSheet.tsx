@@ -18,6 +18,7 @@ interface Props {
   onSpeedChange: (s: number) => void;
   onSoundToggle: (on: boolean) => void;
   onResetSettings: () => void;
+  onCustomApply: (values: number[]) => void;
 }
 
 export function MobileSettingsSheet({ open, onClose, ...panelProps }: Props) {

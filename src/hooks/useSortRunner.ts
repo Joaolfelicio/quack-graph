@@ -51,6 +51,7 @@ type Action =
   | { type: 'set-distribution'; distribution: Distribution }
   | { type: 'set-count'; count: number }
   | { type: 'set-speed'; speed: number }
+  | { type: 'set-custom-items'; values: number[] }
   | { type: 'shuffle' }
   | { type: 'play' }
   | { type: 'pause' }
@@ -302,18 +303,34 @@ function reducer(state: RunnerState, action: Action): RunnerState {
     case 'set-algorithm':
       return rebuild(state, state.baseItems, action.algorithmId);
     case 'set-distribution': {
+      if (action.distribution === 'custom') {
+        return { ...state, distribution: 'custom' };
+      }
       const raw = generate(action.distribution, state.count);
       const items = raw.map((value, i) => ({ id: i, value }));
       return rebuild({ ...state, distribution: action.distribution }, items, state.algorithmId);
     }
     case 'set-count': {
+      if (state.distribution === 'custom') return state;
       const raw = generate(state.distribution, action.count);
       const items = raw.map((value, i) => ({ id: i, value }));
       return rebuild({ ...state, count: action.count }, items, state.algorithmId);
     }
+    case 'set-custom-items': {
+      const items = action.values.map((value, i) => ({ id: i, value }));
+      return rebuild({ ...state, distribution: 'custom', count: action.values.length }, items, state.algorithmId);
+    }
     case 'set-speed':
       return { ...state, speed: action.speed };
     case 'shuffle': {
+      if (state.distribution === 'custom') {
+        const shuffled = state.baseItems.slice();
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return rebuild(state, shuffled, state.algorithmId);
+      }
       const raw = generate(state.distribution, state.count);
       const items = raw.map((value, i) => ({ id: i, value }));
       return rebuild(state, items, state.algorithmId);
@@ -437,6 +454,7 @@ export function useSortRunner(args: UseSortRunnerArgs) {
       setDistribution: (distribution: Distribution) => dispatch({ type: 'set-distribution', distribution }),
       setCount: (count: number) => dispatch({ type: 'set-count', count }),
       setSpeed: (speed: number) => dispatch({ type: 'set-speed', speed }),
+      setCustomItems: (values: number[]) => dispatch({ type: 'set-custom-items', values }),
       shuffle: () => dispatch({ type: 'shuffle' }),
       play: () => dispatch({ type: 'play' }),
       pause: () => dispatch({ type: 'pause' }),
