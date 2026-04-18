@@ -45,7 +45,7 @@ export const DuckColumn = memo(function DuckColumn({ id, value, duckSize, column
       layoutId={`col-${id}`}
       transition={{ type: 'spring', stiffness: 420, damping: 32 }}
       className={cn(
-        'flex flex-col-reverse items-center justify-start rounded-2xl px-0.5 py-1',
+        'flex flex-col-reverse items-center justify-start rounded-2xl px-1.5 py-1.5',
         'bg-pond-100/40 dark:bg-pond-800/30 backdrop-blur-sm',
         ringFor(highlight),
       )}

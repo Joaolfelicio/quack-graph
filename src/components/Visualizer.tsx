@@ -30,7 +30,7 @@ export function Visualizer({ items, highlights, maxValue }: Props) {
   const duckSize = Math.max(
     6,
     Math.min(
-      columnWidth - 2,
+      columnWidth - 14,
       Math.floor(heightBudget / (maxValue * duckHeightAspect)),
     ),
   );
