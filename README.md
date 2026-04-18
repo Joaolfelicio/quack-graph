@@ -14,9 +14,9 @@ Each column is an item; its value is the number of ducks in the stack. Watch sho
 
 ## Features
 
-- **15 Sorting Algorithms:** Bubble, Cocktail Shaker, Insertion, Selection, Gnome, Odd-Even, Comb, Shell, Merge, Quick, Heap, Pancake, Counting, Radix (LSD), and Bucket Sort.
+- **16 Sorting Algorithms:** Bubble, Cocktail Shaker, Insertion, Selection, Gnome, Odd-Even, Comb, Shell, Merge, Quick, Heap, Pancake, Counting, Radix (LSD), Bucket Sort, and more.
 - **Interactive Controls:** Play, Pause, Step forward, Step back, Reset, and Shuffle.
-- **Adjustable Parameters:** Control item count, animation speed, and initial array distribution (random, nearly-sorted, reversed, few-unique).
+- **Adjustable Parameters:** Control item count, animation speed, and initial array distribution (random, nearly-sorted, reversed, few-unique, and **custom values**).
 - **Educational:** Includes Big-O complexity badges (best / average / worst / space) and stability / in-place indicators for every algorithm.
 - **Live Stats:** Tracks comparisons, swaps, writes, elapsed time, and progress percentage.
 - **Accessible & Customizable:** Dark mode (persisted in `localStorage`), fully keyboard navigable, and optional WebAudio sound effects (quack on swap, splash on compare).
