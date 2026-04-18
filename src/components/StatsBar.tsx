@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { RunnerStats } from '../hooks/useSortRunner';
 
 interface Props {
@@ -19,7 +20,7 @@ function Stat({ label, value, tooltip }: { label: string; value: string; tooltip
   );
 }
 
-export function StatsBar({ stats, totalSteps, stepIndex }: Props) {
+export const StatsBar = memo(function StatsBar({ stats, totalSteps, stepIndex }: Props) {
   const pct = totalSteps ? Math.min(100, Math.floor((stepIndex / totalSteps) * 100)) : 0;
   return (
     <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
@@ -35,4 +36,4 @@ export function StatsBar({ stats, totalSteps, stepIndex }: Props) {
       </div>
     </div>
   );
-}
+});
