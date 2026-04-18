@@ -1,6 +1,7 @@
 import type { SortAlgorithm } from '../algorithms/types';
 import { DISTRIBUTIONS, type Distribution } from '../lib/distributions';
 import { cn } from '../lib/cn';
+import { AlgorithmSelect } from './AlgorithmSelect';
 
 interface Props {
   algorithms: SortAlgorithm[];
@@ -20,32 +21,14 @@ export function SettingsPanel({
   algorithms, algorithmId, distribution, count, speed, soundEnabled,
   onAlgorithmChange, onDistributionChange, onCountChange, onSpeedChange, onSoundToggle,
 }: Props) {
-  const grouped = {
-    comparison: algorithms.filter((a) => a.category === 'comparison'),
-    distribution: algorithms.filter((a) => a.category === 'distribution'),
-    hybrid: algorithms.filter((a) => a.category === 'hybrid'),
-  };
-
   return (
     <div className="flex flex-col gap-4 rounded-3xl border border-pond-200/60 bg-white/70 p-5 shadow-soft backdrop-blur dark:border-pond-800/50 dark:bg-pond-900/50">
       <Section label="Algorithm">
-        <select
+        <AlgorithmSelect
+          algorithms={algorithms}
           value={algorithmId}
-          onChange={(e) => onAlgorithmChange(e.target.value)}
-          className="w-full rounded-xl border border-pond-200 bg-white px-3 py-2 text-sm font-medium text-pond-900 shadow-sm focus:border-pond-400 dark:border-pond-700 dark:bg-pond-900 dark:text-pond-50"
-        >
-          <optgroup label="Comparison">
-            {grouped.comparison.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
-          </optgroup>
-          <optgroup label="Distribution">
-            {grouped.distribution.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
-          </optgroup>
-          {grouped.hybrid.length > 0 && (
-            <optgroup label="Hybrid">
-              {grouped.hybrid.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
-            </optgroup>
-          )}
-        </select>
+          onChange={onAlgorithmChange}
+        />
       </Section>
 
       <Section label={`Items (${count})`}>
