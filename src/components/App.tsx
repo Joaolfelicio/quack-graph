@@ -49,7 +49,14 @@ export function App() {
     if (stored && ALGORITHMS_BY_ID[stored]) return stored;
     return 'bubble';
   }, []);
-  const initialCount = useMemo(() => Math.min(30, Math.max(8, Math.round(readNumber(LS.count, 10)))), []);
+  const initialCount = useMemo(() => {
+    const stored = localStorage.getItem(LS.count);
+    if (stored) return Math.min(30, Math.max(4, Math.round(Number(stored))));
+    const w = typeof window !== 'undefined' ? window.innerWidth : 1024;
+    if (w < 640) return 8;
+    if (w < 1024) return 15;
+    return 20;
+  }, []);
   const initialSpeed = useMemo(() => Math.min(16, Math.max(0.25, readNumber(LS.speed, 1))), []);
   const initialDistribution = useMemo(
     () => readString<Distribution>(LS.dist, 'random', DISTS),
