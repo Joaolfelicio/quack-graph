@@ -1,25 +1,23 @@
 import { useEffect } from 'react';
-import type { SortAlgorithm } from '../algorithms/types';
-import type { Distribution } from '../lib/distributions';
+import type { GraphSource } from '../hooks/useGraphRunner';
 import { SettingsPanel } from './SettingsPanel';
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  algorithms: SortAlgorithm[];
   algorithmId: string;
-  distribution: Distribution;
-  count: number;
+  graphSource: GraphSource;
   speed: number;
   soundEnabled: boolean;
+  sourceNode: number;
+  targetNode: number;
+  nodeCount: number;
   onAlgorithmChange: (id: string) => void;
-  onDistributionChange: (d: Distribution) => void;
-  onCountChange: (n: number) => void;
+  onGraphSourceChange: (source: GraphSource) => void;
   onSpeedChange: (s: number) => void;
   onSoundToggle: (on: boolean) => void;
-  onResetSettings: () => void;
-  onCustomApply: (values: number[]) => void;
-  customValues?: number[];
+  onSourceNodeChange: (n: number) => void;
+  onTargetNodeChange: (n: number) => void;
 }
 
 export function MobileSettingsSheet({ open, onClose, ...panelProps }: Props) {
@@ -32,14 +30,11 @@ export function MobileSettingsSheet({ open, onClose, ...panelProps }: Props) {
 
   return (
     <>
-      {/* Backdrop */}
       <div
         className={`fixed inset-0 z-40 bg-black/40 transition-opacity duration-300 lg:hidden ${open ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
         onClick={onClose}
         aria-hidden="true"
       />
-
-      {/* Sheet */}
       <div
         role="dialog"
         aria-modal="true"

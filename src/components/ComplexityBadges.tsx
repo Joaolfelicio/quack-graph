@@ -1,19 +1,15 @@
 import { memo } from 'react';
-import type { SortAlgorithm } from '../algorithms/types';
+import type { GraphAlgorithmMeta } from '../algorithms/types';
 
 function complexityTone(value: string): string {
   const v = value.replace(/\s/g, '');
-  if (/^O\(1\)$/.test(v) || /^O\(logn\)$/.test(v)) {
+  if (/^O\(1\)$/.test(v) || /^O\(logV\)$/.test(v) || /^O\(α/.test(v)) {
     return 'bg-emerald-50 text-emerald-900 ring-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-100 dark:ring-emerald-700/40';
   }
-  if (/O\(n²\)|O\(n\^2\)|O\(n³\)|O\(n\^3\)/.test(v)) {
+  if (/O\(V\^2\)|O\(VE\^2\)|O\(V\^3\)/.test(v)) {
     return 'bg-rose-50 text-rose-900 ring-rose-200 dark:bg-rose-900/30 dark:text-rose-100 dark:ring-rose-700/40';
   }
   return 'bg-amber-50 text-amber-900 ring-amber-200 dark:bg-amber-900/30 dark:text-amber-100 dark:ring-amber-700/40';
-}
-
-interface Props {
-  algorithm: SortAlgorithm;
 }
 
 function Badge({ label, value, tone, tooltip }: { label: string; value: string; tone: string; tooltip: string }) {
@@ -31,41 +27,7 @@ function Badge({ label, value, tone, tooltip }: { label: string; value: string; 
   );
 }
 
-export const ComplexityBadges = memo(function ComplexityBadges({ algorithm }: Props) {
-  const t = algorithm.complexity.time;
-  return (
-    <div className="flex flex-wrap gap-2">
-      <Badge
-        label="Best"
-        value={t.best}
-        tone={complexityTone(t.best)}
-        tooltip={`Best-case time complexity: how fast this algorithm runs on the most favorable input (e.g. already sorted). ${t.best}`}
-      />
-      <Badge
-        label="Average"
-        value={t.average}
-        tone={complexityTone(t.average)}
-        tooltip={`Average-case time complexity: expected performance on a typical random input. ${t.average}`}
-      />
-      <Badge
-        label="Worst"
-        value={t.worst}
-        tone={complexityTone(t.worst)}
-        tooltip={`Worst-case time complexity: slowest possible performance, often on reverse-sorted input. ${t.worst}`}
-      />
-      <Badge
-        label="Space"
-        value={algorithm.complexity.space}
-        tone="bg-violet-50 text-violet-900 ring-violet-200 dark:bg-violet-900/30 dark:text-violet-100 dark:ring-violet-700/40"
-        tooltip={`Space complexity: how much extra memory the algorithm needs beyond the input array. ${algorithm.complexity.space}`}
-      />
-      <Chip ok={algorithm.stable} tooltip="Stable sort: equal elements keep their original relative order. Important when sorting objects by multiple keys.">Stable</Chip>
-      <Chip ok={algorithm.inPlace} tooltip="In-place sort: sorts directly in the input array using only O(1) extra memory - no large auxiliary arrays needed.">In-place</Chip>
-    </div>
-  );
-});
-
-function Chip({ ok, children, tooltip }: { ok: boolean; children: React.ReactNode; tooltip: string }) {
+function Chip({ ok, children, tooltip }: { ok?: boolean; children: React.ReactNode; tooltip: string }) {
   return (
     <div className="group relative">
       <div
@@ -85,3 +47,26 @@ function Chip({ ok, children, tooltip }: { ok: boolean; children: React.ReactNod
     </div>
   );
 }
+
+interface Props { meta: GraphAlgorithmMeta }
+
+export const ComplexityBadges = memo(function ComplexityBadges({ meta }: Props) {
+  const t = meta.complexity.time;
+  return (
+    <div className="flex flex-wrap gap-2">
+      {t.best && (
+        <Badge label="Best" value={t.best} tone={complexityTone(t.best)}
+          tooltip={`Best-case time complexity. ${t.best}`} />
+      )}
+      <Badge label="Average" value={t.average} tone={complexityTone(t.average)}
+        tooltip={`Average-case time complexity. ${t.average}`} />
+      <Badge label="Worst" value={t.worst} tone={complexityTone(t.worst)}
+        tooltip={`Worst-case time complexity. ${t.worst}`} />
+      <Badge label="Space" value={meta.complexity.space}
+        tone="bg-violet-50 text-violet-900 ring-violet-200 dark:bg-violet-900/30 dark:text-violet-100 dark:ring-violet-700/40"
+        tooltip={`Auxiliary space complexity. ${meta.complexity.space}`} />
+      <Chip ok={meta.requiresDirected} tooltip="This algorithm requires a directed graph.">Directed</Chip>
+      <Chip ok={meta.requiresWeighted} tooltip="This algorithm uses edge weights.">Weighted</Chip>
+    </div>
+  );
+});
