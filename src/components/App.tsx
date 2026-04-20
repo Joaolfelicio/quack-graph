@@ -156,7 +156,7 @@ export function App() {
   };
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-7xl flex-col gap-4 p-4 sm:p-6 lg:p-8">
+    <div className="mx-auto flex min-h-screen max-w-7xl flex-col gap-4 p-4 pb-28 sm:p-6 sm:pb-28 lg:p-8 lg:pb-28">
       <header className="relative z-20 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <LogoDuck />
@@ -249,54 +249,61 @@ export function App() {
             </div>
           )}
 
-          <div className="flex flex-col gap-3 rounded-3xl border border-pond-200/60 bg-white/70 p-4 shadow-soft backdrop-blur dark:border-pond-800/50 dark:bg-pond-900/50">
-            <StatsBar
-              stats={state.stats}
-              statKeys={algo?.meta.stats ?? []}
-              totalSteps={state.events.length}
-              stepIndex={state.stepIndex}
-            />
-            <div className="flex flex-wrap gap-x-3 gap-y-1">
-              {[
-                { color: 'bg-yellow-300', label: 'Current' },
-                { color: 'bg-blue-300', label: 'Visited' },
-                { color: 'bg-orange-300', label: 'Finished' },
-                { color: 'bg-amber-100', label: 'Frontier' },
-                { color: 'bg-green-400', label: 'Source' },
-                { color: 'bg-red-400', label: 'Target' },
-                { color: 'bg-yellow-400 ring-1 ring-yellow-500', label: 'Path' },
-                { color: 'bg-emerald-400', label: 'MST/Tree' },
-              ].map(({ color, label }) => (
-                <span key={label} className="flex items-center gap-1 text-xs text-pond-600 dark:text-pond-300">
-                  <span className={`inline-block h-2.5 w-2.5 rounded-full ${color} opacity-80`} />
-                  {label}
-                </span>
-              ))}
-            </div>
-            <div className="flex items-center justify-between gap-3">
-              <Controls
-                status={state.status}
-                canStepBack={state.stepIndex > 0}
-                canStepForward={state.stepIndex < state.events.length}
-                onToggle={togglePlay}
-                onStepBack={actions.stepBack}
-                onStepForward={actions.stepForward}
-                onReset={actions.reset}
-                onRegenerate={handleRegenerate}
-              />
-              <p className="hidden text-xs text-pond-600 dark:text-pond-300 sm:block">
-                <kbd className="rounded bg-pond-100 px-1 py-0.5 font-mono text-[10px] dark:bg-pond-800">Space</kbd> play/pause ·{' '}
-                <kbd className="rounded bg-pond-100 px-1 py-0.5 font-mono text-[10px] dark:bg-pond-800">←/→</kbd> step ·{' '}
-                <kbd className="rounded bg-pond-100 px-1 py-0.5 font-mono text-[10px] dark:bg-pond-800">R</kbd> reset
-              </p>
-            </div>
-          </div>
         </section>
 
         <aside className="hidden lg:sticky lg:top-4 lg:block lg:self-start">
           <SettingsPanel {...commonPanelProps} />
         </aside>
       </main>
+
+      {/* Fixed controls bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-pond-200/80 bg-white/90 px-4 py-3 shadow-lg backdrop-blur dark:border-pond-800/60 dark:bg-pond-950/90">
+        <div className="mx-auto flex max-w-7xl flex-col gap-2">
+          <div className="flex items-center gap-3">
+            <Controls
+              status={state.status}
+              canStepBack={state.stepIndex > 0}
+              canStepForward={state.stepIndex < state.events.length}
+              onToggle={togglePlay}
+              onStepBack={actions.stepBack}
+              onStepForward={actions.stepForward}
+              onReset={actions.reset}
+              onRegenerate={handleRegenerate}
+            />
+            <div className="ml-2 hidden flex-wrap gap-x-3 gap-y-1 sm:flex">
+              {[
+                { color: 'bg-yellow-300', label: 'Current' },
+                { color: 'bg-blue-300', label: 'Visited' },
+                { color: 'bg-orange-300', label: 'Finished' },
+                { color: 'bg-amber-100 ring-1 ring-amber-300', label: 'Frontier' },
+                { color: 'bg-green-400', label: 'Source' },
+                { color: 'bg-red-400', label: 'Target' },
+                { color: 'bg-yellow-400', label: 'Path' },
+                { color: 'bg-emerald-400', label: 'MST/Tree' },
+              ].map(({ color, label }) => (
+                <span key={label} className="flex items-center gap-1 text-xs text-pond-600 dark:text-pond-300">
+                  <span className={`inline-block h-2.5 w-2.5 rounded-full ${color} opacity-90`} />
+                  {label}
+                </span>
+              ))}
+            </div>
+            <div className="ml-auto flex items-center gap-4">
+              <StatsBar
+                stats={state.stats}
+                statKeys={algo?.meta.stats ?? []}
+                totalSteps={state.events.length}
+                stepIndex={state.stepIndex}
+                compact
+              />
+            </div>
+          </div>
+          <p className="hidden text-xs text-pond-500 dark:text-pond-400 sm:block">
+            <kbd className="rounded bg-pond-100 px-1 py-0.5 font-mono text-[10px] dark:bg-pond-800">Space</kbd> play/pause ·{' '}
+            <kbd className="rounded bg-pond-100 px-1 py-0.5 font-mono text-[10px] dark:bg-pond-800">←/→</kbd> step ·{' '}
+            <kbd className="rounded bg-pond-100 px-1 py-0.5 font-mono text-[10px] dark:bg-pond-800">R</kbd> reset
+          </p>
+        </div>
+      </div>
 
       <button
         type="button"

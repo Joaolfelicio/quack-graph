@@ -4,13 +4,15 @@ import type { GraphVisualState } from '../hooks/useGraphRunner';
 import type { NodeRole, EdgeRole } from '../algorithms/types';
 
 const NODE_R = 20;
+const ARROW_OFFSET = NODE_R + 5;
+const CURVE_OFFSET = 22; // perpendicular offset for anti-parallel pairs
 
 const NODE_FILL: Record<NodeRole, string> = {
-  default:   '#bfdbfe', // pond-200
-  frontier:  '#fef3c7', // sand-beige
-  visited:   '#bfdbfe', // pond-200
-  finished:  '#fed7aa', // duck-orange
-  current:   '#fde68a', // duck-yellow
+  default:   '#bfdbfe',
+  frontier:  '#fef3c7',
+  visited:   '#bfdbfe',
+  finished:  '#fed7aa',
+  current:   '#fde68a',
   path:      '#fde68a',
   source:    '#4ade80',
   target:    '#f87171',
@@ -64,23 +66,75 @@ interface Props {
   showDuck: boolean;
 }
 
-function edgePath(
+/**
+ * For straight edges: shorten endpoint along the straight line.
+ * For curved (anti-parallel) edges: shorten along the tangent at the endpoint
+ * of the quadratic bezier (tangent = P2 - controlPoint).
+ */
+function computeEdgePath(
   x1: number, y1: number,
   x2: number, y2: number,
-  _directed: boolean,
+  directed: boolean,
   hasTwin: boolean,
-): string {
+): { d: string; labelX: number; labelY: number } {
   if (!hasTwin) {
-    return `M ${x1} ${y1} L ${x2} ${y2}`;
+    if (directed) {
+      // Shorten start and end so line doesn't overlap node circles
+      const dx = x2 - x1, dy = y2 - y1;
+      const len = Math.sqrt(dx * dx + dy * dy) || 1;
+      const ux = dx / len, uy = dy / len;
+      const sx = x1 + ux * NODE_R;
+      const sy = y1 + uy * NODE_R;
+      const ex = x2 - ux * ARROW_OFFSET;
+      const ey = y2 - uy * ARROW_OFFSET;
+      return {
+        d: `M ${sx} ${sy} L ${ex} ${ey}`,
+        labelX: (x1 + x2) / 2,
+        labelY: (y1 + y2) / 2 - 8,
+      };
+    }
+    return {
+      d: `M ${x1} ${y1} L ${x2} ${y2}`,
+      labelX: (x1 + x2) / 2,
+      labelY: (y1 + y2) / 2 - 6,
+    };
   }
-  // Quadratic curve offset so anti-parallel edges don't overlap
+
+  // Quadratic bezier for anti-parallel pairs
   const mx = (x1 + x2) / 2;
   const my = (y1 + y2) / 2;
   const dx = x2 - x1, dy = y2 - y1;
   const len = Math.sqrt(dx * dx + dy * dy) || 1;
-  const nx = -dy / len * 20;
-  const ny = dx / len * 20;
-  return `M ${x1} ${y1} Q ${mx + nx} ${my + ny} ${x2} ${y2}`;
+  // Perpendicular offset
+  const nx = -dy / len * CURVE_OFFSET;
+  const ny = dx / len * CURVE_OFFSET;
+  const cpx = mx + nx, cpy = my + ny;
+
+  if (directed) {
+    // Shorten start: direction from x1,y1 toward control point
+    const d0x = cpx - x1, d0y = cpy - y1;
+    const l0 = Math.sqrt(d0x * d0x + d0y * d0y) || 1;
+    const sx = x1 + (d0x / l0) * NODE_R;
+    const sy = y1 + (d0y / l0) * NODE_R;
+
+    // Shorten end: tangent at P2 is P2 - controlPoint
+    const t2x = x2 - cpx, t2y = y2 - cpy;
+    const l2 = Math.sqrt(t2x * t2x + t2y * t2y) || 1;
+    const ex = x2 - (t2x / l2) * ARROW_OFFSET;
+    const ey = y2 - (t2y / l2) * ARROW_OFFSET;
+
+    return {
+      d: `M ${sx} ${sy} Q ${cpx} ${cpy} ${ex} ${ey}`,
+      labelX: cpx,
+      labelY: cpy - 6,
+    };
+  }
+
+  return {
+    d: `M ${x1} ${y1} Q ${cpx} ${cpy} ${x2} ${y2}`,
+    labelX: cpx,
+    labelY: cpy - 6,
+  };
 }
 
 function arrowId(role: EdgeRole) { return `arrow-${role}`; }
@@ -100,7 +154,6 @@ export const Visualizer = memo(function Visualizer({ graph, visual, topoOrder, s
     return () => obs.disconnect();
   }, []);
 
-  // Scale graph coordinates to fit container
   const nodes = graph.nodes;
   const allX = nodes.map(n => n.x);
   const allY = nodes.map(n => n.y);
@@ -114,18 +167,16 @@ export const Visualizer = memo(function Visualizer({ graph, visual, topoOrder, s
   function sx(x: number) { return pad + (x - minX) * scale; }
   function sy(y: number) { return pad + (y - minY) * scale; }
 
-  // Detect twin (anti-parallel) directed edges
   const edgePairs = new Set<string>();
-  for (const e of graph.edges) {
-    edgePairs.add(`${e.u}-${e.v}`);
-  }
+  for (const e of graph.edges) edgePairs.add(`${e.u}-${e.v}`);
   function hasTwin(u: number, v: number) {
     return graph.directed && edgePairs.has(`${v}-${u}`);
   }
 
-  // Find last visited node for duck position
   const lastVisited = (() => {
-    for (const [id, role] of Object.entries(visual.nodeRoles).reverse()) {
+    const entries = Object.entries(visual.nodeRoles);
+    for (let i = entries.length - 1; i >= 0; i--) {
+      const [id, role] = entries[i];
       if (role === 'current' || role === 'visited') return Number(id);
     }
     return null;
@@ -148,7 +199,7 @@ export const Visualizer = memo(function Visualizer({ graph, visual, topoOrder, s
               key={role}
               id={arrowId(role)}
               markerWidth="8" markerHeight="8"
-              refX="6" refY="3"
+              refX="7" refY="3"
               orient="auto"
             >
               <path d="M0,0 L0,6 L8,3 z" fill={EDGE_STROKE[role]} />
@@ -156,36 +207,20 @@ export const Visualizer = memo(function Visualizer({ graph, visual, topoOrder, s
           ))}
         </defs>
 
-        {/* Edges */}
         {graph.edges.map(e => {
           const role: EdgeRole = (visual.edgeRoles[e.id] as EdgeRole) ?? 'default';
           const x1 = sx(nodes[e.u].x), y1 = sy(nodes[e.u].y);
           const x2 = sx(nodes[e.v].x), y2 = sy(nodes[e.v].y);
           const twin = hasTwin(e.u, e.v);
-          const d = edgePath(x1, y1, x2, y2, graph.directed, twin);
+          const { d, labelX, labelY } = computeEdgePath(x1, y1, x2, y2, graph.directed, twin);
           const stroke = EDGE_STROKE[role] ?? EDGE_STROKE.default;
           const sw = EDGE_WIDTH[role] ?? 1.5;
-
-          // Shorten path endpoint so arrow doesn't overlap node
-          const dx = x2 - x1, dy = y2 - y1;
-          const len = Math.sqrt(dx * dx + dy * dy) || 1;
-          const ex = x2 - (dx / len) * (NODE_R + 4);
-          const ey = y2 - (dy / len) * (NODE_R + 4);
-          const shortD = graph.directed && !twin
-            ? `M ${x1} ${y1} L ${ex} ${ey}`
-            : d;
-
-          // Weight pill midpoint
-          const mx = (x1 + x2) / 2;
-          const my = (y1 + y2) / 2;
-
-          // Flow label
           const flowInfo = visual.flow[e.id];
 
           return (
             <g key={e.id}>
               <path
-                d={shortD}
+                d={d}
                 stroke={stroke}
                 strokeWidth={sw}
                 fill="none"
@@ -195,8 +230,8 @@ export const Visualizer = memo(function Visualizer({ graph, visual, topoOrder, s
               />
               {graph.weighted && (
                 <text
-                  x={mx}
-                  y={my - 6}
+                  x={labelX}
+                  y={labelY}
                   textAnchor="middle"
                   fontSize="10"
                   fill={stroke}
@@ -209,7 +244,6 @@ export const Visualizer = memo(function Visualizer({ graph, visual, topoOrder, s
           );
         })}
 
-        {/* Nodes */}
         {nodes.map(n => {
           const role: NodeRole = (visual.nodeRoles[n.id] as NodeRole) ?? 'default';
           const cx = sx(n.x), cy = sy(n.y);
@@ -220,21 +254,16 @@ export const Visualizer = memo(function Visualizer({ graph, visual, topoOrder, s
 
           return (
             <g key={n.id} transform={`translate(${cx},${cy})`}>
-              {/* Lily-pad ellipse */}
               <ellipse rx={NODE_R + 6} ry={NODE_R + 3} fill="#86efac" opacity={0.4} />
-              {/* Node circle */}
               <circle r={NODE_R} fill={fill} stroke={stroke} strokeWidth={2} />
-              {/* Node id */}
               <text textAnchor="middle" dominantBaseline="central" fontSize="12" fontWeight="bold" fill="#1e3a5f" className="select-none">
                 {n.id}
               </text>
-              {/* Distance label above node */}
               {dist !== undefined && dist !== null && (
                 <text y={-NODE_R - 8} textAnchor="middle" fontSize="10" fill={stroke} fontWeight="600" className="select-none">
                   {dist === Infinity ? '∞' : dist.toFixed(dist % 1 === 0 ? 0 : 1)}
                 </text>
               )}
-              {/* Topo order */}
               {topoPos !== -1 && (
                 <text y={NODE_R + 14} textAnchor="middle" fontSize="10" fill="#7c3aed" fontWeight="600" className="select-none">
                   #{topoPos + 1}
@@ -244,7 +273,6 @@ export const Visualizer = memo(function Visualizer({ graph, visual, topoOrder, s
           );
         })}
 
-        {/* Duck mascot */}
         {showDuck && lastVisited !== null && (
           <g transform={`translate(${sx(nodes[lastVisited].x) - 10},${sy(nodes[lastVisited].y) - NODE_R - 22})`}>
             <DuckSVG />
