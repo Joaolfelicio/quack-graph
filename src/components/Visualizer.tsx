@@ -2,62 +2,11 @@ import { memo, useRef, useState, useEffect } from 'react';
 import type { Graph } from '../lib/graph';
 import type { GraphVisualState } from '../hooks/useGraphRunner';
 import type { NodeRole, EdgeRole } from '../algorithms/types';
+import { NODE_FILL, NODE_STROKE, NODE_STROKE_WIDTH, EDGE_STROKE, EDGE_WIDTH } from '../lib/visualColors';
 
 const NODE_R = 20;
 const ARROW_OFFSET = NODE_R + 5;
 const CURVE_OFFSET = 22; // perpendicular offset for anti-parallel pairs
-
-const NODE_FILL: Record<NodeRole, string> = {
-  default:   '#bfdbfe',
-  frontier:  '#fef3c7',
-  visited:   '#bfdbfe',
-  finished:  '#fed7aa',
-  current:   '#fde68a',
-  path:      '#fde68a',
-  source:    '#4ade80',
-  target:    '#f87171',
-  scc0:      '#60a5fa',
-  scc1:      '#34d399',
-  scc2:      '#fbbf24',
-  scc3:      '#f472b6',
-  scc4:      '#a78bfa',
-  scc5:      '#fb923c',
-};
-
-const NODE_STROKE: Record<NodeRole, string> = {
-  default:   '#93c5fd',
-  frontier:  '#fcd34d',
-  visited:   '#60a5fa',
-  finished:  '#fb923c',
-  current:   '#f59e0b',
-  path:      '#f59e0b',
-  source:    '#16a34a',
-  target:    '#dc2626',
-  scc0:      '#3b82f6',
-  scc1:      '#10b981',
-  scc2:      '#d97706',
-  scc3:      '#db2777',
-  scc4:      '#7c3aed',
-  scc5:      '#ea580c',
-};
-
-const EDGE_STROKE: Record<EdgeRole, string> = {
-  default:    '#93c5fd',
-  considered: '#1d4ed8',
-  relaxed:    '#f59e0b',
-  tree:       '#059669',
-  mst:        '#059669',
-  path:       '#f59e0b',
-  cross:      '#a855f7',
-  back:       '#ef4444',
-  forward:    '#06b6d4',
-  cut:        '#ef4444',
-  residual:   '#d1d5db',
-};
-
-const EDGE_WIDTH: Partial<Record<EdgeRole, number>> = {
-  mst: 3, tree: 3, path: 4, cut: 2,
-};
 
 interface Props {
   graph: Graph;
@@ -254,7 +203,7 @@ export const Visualizer = memo(function Visualizer({ graph, visual, topoOrder, s
           return (
             <g key={n.id} transform={`translate(${cx},${cy})`}>
               <ellipse rx={NODE_R + 6} ry={NODE_R + 3} fill="#86efac" opacity={0.4} />
-              <circle r={NODE_R} fill={fill} stroke={stroke} strokeWidth={2} />
+              <circle r={NODE_R} fill={fill} stroke={stroke} strokeWidth={NODE_STROKE_WIDTH[role] ?? 2} />
               <text textAnchor="middle" dominantBaseline="central" fontSize="12" fontWeight="bold" fill="#1e3a5f" className="select-none">
                 {n.id}
               </text>

@@ -4,6 +4,7 @@ import { useDarkMode } from '../hooks/useDarkMode';
 import { useGraphRunner, type GraphSource } from '../hooks/useGraphRunner';
 import type { PresetId } from '../lib/graphs';
 import { PRESET_IDS } from '../lib/graphs';
+import { LEGEND_ITEMS } from '../lib/visualColors';
 import type { RunnerStats, RunnerStatus } from '../hooks/useGraphRunner';
 import { ComplexityBadges } from './ComplexityBadges';
 import { Controls } from './Controls';
@@ -300,17 +301,6 @@ export function App() {
     </div>
   );
 }
-
-const LEGEND_ITEMS: { fill: string; stroke: string; label: string }[] = [
-  { fill: '#fde68a', stroke: '#f59e0b', label: 'Current' },
-  { fill: '#bfdbfe', stroke: '#60a5fa', label: 'Visited' },
-  { fill: '#fed7aa', stroke: '#fb923c', label: 'Finished' },
-  { fill: '#fef3c7', stroke: '#fcd34d', label: 'Frontier' },
-  { fill: '#4ade80', stroke: '#16a34a', label: 'Source' },
-  { fill: '#f87171', stroke: '#dc2626', label: 'Target' },
-  { fill: '#fde68a', stroke: '#f59e0b', label: 'Path' },
-  { fill: '#059669', stroke: '#047857', label: 'MST/Tree' },
-];
 
 function ShortcutsButton() {
   const [open, setOpen] = useState(false);
