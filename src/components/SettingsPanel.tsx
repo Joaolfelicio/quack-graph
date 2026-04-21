@@ -25,7 +25,7 @@ export function SettingsPanel({
   onAlgorithmChange, onGraphSourceChange, onSpeedChange, onSoundToggle,
   onSourceNodeChange, onTargetNodeChange,
 }: Props) {
-  const speedLabel = speed === Math.round(speed) ? `${speed}×` : `${speed}×`;
+  const speedLabel = `${speed}×`;
 
   return (
     <div className="flex flex-col gap-4 rounded-3xl border border-pond-200/60 bg-white/70 p-5 shadow-soft backdrop-blur dark:border-pond-800/50 dark:bg-pond-900/50">

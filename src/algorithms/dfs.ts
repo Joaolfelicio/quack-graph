@@ -23,6 +23,7 @@ const dfs: GraphAlgorithm = {
     function* visit(u: number): Generator<import('./types').GraphEvent> {
       color[u] = 'gray';
       discovery[u] = timer++;
+      yield { type: 'set-disc', node: u, value: discovery[u] };
       yield { type: 'visit-node', node: u };
       yield { type: 'push-stack', node: u };
 
@@ -45,6 +46,7 @@ const dfs: GraphAlgorithm = {
 
       color[u] = 'black';
       finish[u] = timer++;
+      yield { type: 'set-fin', node: u, value: finish[u] };
       yield { type: 'finish-node', node: u };
       yield { type: 'pop-stack', node: u };
     }

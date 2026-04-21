@@ -51,6 +51,8 @@ export type GraphEvent =
   | { type: 'find'; node: NodeId; root: NodeId }
   | { type: 'push-stack'; node: NodeId }
   | { type: 'pop-stack'; node: NodeId }
+  | { type: 'set-disc'; node: NodeId; value: number }
+  | { type: 'set-fin'; node: NodeId; value: number }
   | { type: 'set-lowlink'; node: NodeId; low: number; index: number; oldLow: number; oldIndex: number }
   | { type: 'emit-scc'; nodes: NodeId[]; group: number }
   | { type: 'topo-emit'; node: NodeId; order: number }

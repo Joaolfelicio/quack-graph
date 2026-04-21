@@ -11,8 +11,9 @@ const CURVE_OFFSET = 22; // perpendicular offset for anti-parallel pairs
 interface Props {
   graph: Graph;
   visual: GraphVisualState;
-  topoOrder: number[];
   showDuck: boolean;
+  sourceNode?: number;
+  targetNode?: number;
 }
 
 /**
@@ -88,7 +89,7 @@ function computeEdgePath(
 
 function arrowId(role: EdgeRole) { return `arrow-${role}`; }
 
-export const Visualizer = memo(function Visualizer({ graph, visual, topoOrder, showDuck }: Props) {
+export const Visualizer = memo(function Visualizer({ graph, visual, showDuck, sourceNode, targetNode }: Props) {
   const containerRef = useRef<SVGSVGElement>(null);
   const [size, setSize] = useState({ w: 800, h: 500 });
 
@@ -183,7 +184,11 @@ export const Visualizer = memo(function Visualizer({ graph, visual, topoOrder, s
                   textAnchor="middle"
                   fontSize="10"
                   fill={stroke}
-                  className="select-none font-mono"
+                  stroke="white"
+                  strokeWidth={3}
+                  strokeLinejoin="round"
+                  paintOrder="stroke"
+                  className="select-none font-mono dark:[stroke:#0f172a]"
                 >
                   {flowInfo ? `${flowInfo.flow}/${flowInfo.capacity}` : e.weight}
                 </text>
@@ -198,12 +203,21 @@ export const Visualizer = memo(function Visualizer({ graph, visual, topoOrder, s
           const fill = NODE_FILL[role] ?? NODE_FILL.default;
           const stroke = NODE_STROKE[role] ?? NODE_STROKE.default;
           const dist = visual.dist[n.id];
-          const topoPos = topoOrder.indexOf(n.id);
+          // Static source/target indicator (shown even before algo runs)
+          const isStaticSource = role === 'default' && n.id === sourceNode;
+          const isStaticTarget = role === 'default' && n.id === targetNode;
+          const effectiveFill = isStaticSource ? NODE_FILL.source : isStaticTarget ? NODE_FILL.target : fill;
+          const effectiveStroke = isStaticSource ? NODE_STROKE.source : isStaticTarget ? NODE_STROKE.target : stroke;
+          const disc = visual.disc[n.id];
+          const fin = visual.fin[n.id];
+          const dfLabel = disc !== undefined
+            ? (fin !== undefined ? `${disc}/${fin}` : `${disc}/…`)
+            : null;
 
           return (
             <g key={n.id} transform={`translate(${cx},${cy})`}>
               <ellipse rx={NODE_R + 6} ry={NODE_R + 3} fill="#86efac" opacity={0.4} />
-              <circle r={NODE_R} fill={fill} stroke={stroke} strokeWidth={NODE_STROKE_WIDTH[role] ?? 2} />
+              <circle r={NODE_R} fill={effectiveFill} stroke={effectiveStroke} strokeWidth={NODE_STROKE_WIDTH[role] ?? 2} />
               <text textAnchor="middle" dominantBaseline="central" fontSize="12" fontWeight="bold" fill="#1e3a5f" className="select-none">
                 {n.id}
               </text>
@@ -212,9 +226,20 @@ export const Visualizer = memo(function Visualizer({ graph, visual, topoOrder, s
                   {dist === Infinity ? '∞' : dist.toFixed(dist % 1 === 0 ? 0 : 1)}
                 </text>
               )}
-              {topoPos !== -1 && (
-                <text y={NODE_R + 14} textAnchor="middle" fontSize="10" fill="#7c3aed" fontWeight="600" className="select-none">
-                  #{topoPos + 1}
+              {dfLabel && (
+                <text
+                  y={-NODE_R - 8}
+                  textAnchor="middle"
+                  fontSize="9"
+                  fill={stroke}
+                  fontWeight="600"
+                  stroke="white"
+                  strokeWidth={2.5}
+                  strokeLinejoin="round"
+                  paintOrder="stroke"
+                  className="select-none font-mono dark:[stroke:#0f172a]"
+                >
+                  {dfLabel}
                 </text>
               )}
             </g>

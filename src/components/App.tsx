@@ -241,8 +241,9 @@ export function App() {
             <Visualizer
               graph={state.graph}
               visual={state.visual}
-              topoOrder={state.visual.topoOrder}
               showDuck={true}
+              sourceNode={state.source}
+              targetNode={state.target}
             />
           </div>
 
@@ -274,6 +275,7 @@ export function App() {
         totalSteps={state.events.length}
         stats={state.stats}
         statKeys={algo?.meta.stats ?? []}
+        speed={state.speed}
         onToggle={togglePlay}
         onStepBack={actions.stepBack}
         onStepForward={actions.stepForward}
@@ -343,6 +345,7 @@ interface FooterBarProps {
   totalSteps: number;
   stats: RunnerStats;
   statKeys: string[];
+  speed: number;
   onToggle: () => void;
   onStepBack: () => void;
   onStepForward: () => void;
@@ -351,7 +354,7 @@ interface FooterBarProps {
 }
 
 function FooterBar({
-  status, canStepBack, canStepForward, stepIndex, totalSteps, stats, statKeys,
+  status, canStepBack, canStepForward, stepIndex, totalSteps, stats, statKeys, speed,
   onToggle, onStepBack, onStepForward, onReset, onRegenerate,
 }: FooterBarProps) {
   const pct = totalSteps ? Math.min(100, Math.floor((stepIndex / totalSteps) * 100)) : 0;
@@ -398,6 +401,8 @@ function FooterBar({
             </div>
           </>
         )}
+
+        <span className="hidden shrink-0 font-mono text-xs tabular-nums text-pond-500 dark:text-pond-400 md:block">{speed}×</span>
 
         <ShortcutsButton />
       </div>

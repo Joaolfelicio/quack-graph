@@ -18,6 +18,8 @@ export interface GraphVisualState {
   sccGroup: Record<number, number>;
   stack: number[];
   flow: Record<number, { flow: number; capacity: number }>;
+  disc: Record<number, number>;
+  fin: Record<number, number>;
 }
 
 export interface RunnerStats {
@@ -68,7 +70,7 @@ type Action =
   | { type: 'advance'; steps: number; dtMs: number };
 
 function emptyVisual(): GraphVisualState {
-  return { nodeRoles: {}, edgeRoles: {}, dist: {}, parent: {}, mstEdges: [], topoOrder: [], sccGroup: {}, stack: [], flow: {} };
+  return { nodeRoles: {}, edgeRoles: {}, dist: {}, parent: {}, mstEdges: [], topoOrder: [], sccGroup: {}, stack: [], flow: {}, disc: {}, fin: {} };
 }
 
 function cloneVisual(v: GraphVisualState): GraphVisualState {
@@ -82,6 +84,8 @@ function cloneVisual(v: GraphVisualState): GraphVisualState {
     sccGroup: { ...v.sccGroup },
     stack: [...v.stack],
     flow: Object.fromEntries(Object.entries(v.flow).map(([k, val]) => [k, { ...val }])),
+    disc: { ...v.disc },
+    fin: { ...v.fin },
   };
 }
 
@@ -141,6 +145,12 @@ function applyEventForward(visual: GraphVisualState, stats: RunnerStats, event: 
       break;
     case 'pop-stack':
       visual.stack = visual.stack.filter(n => n !== event.node);
+      break;
+    case 'set-disc':
+      visual.disc[event.node] = event.value;
+      break;
+    case 'set-fin':
+      visual.fin[event.node] = event.value;
       break;
     case 'set-lowlink':
       break;
