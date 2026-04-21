@@ -4,11 +4,11 @@ import { useDarkMode } from '../hooks/useDarkMode';
 import { useGraphRunner, type GraphSource } from '../hooks/useGraphRunner';
 import type { PresetId } from '../lib/graphs';
 import { PRESET_IDS } from '../lib/graphs';
+import type { RunnerStats, RunnerStatus } from '../hooks/useGraphRunner';
 import { ComplexityBadges } from './ComplexityBadges';
 import { Controls } from './Controls';
 import { MobileSettingsSheet } from './MobileSettingsSheet';
 import { SettingsPanel } from './SettingsPanel';
-import { StatsBar } from './StatsBar';
 import { ThemeToggle } from './ThemeToggle';
 import { Visualizer } from './Visualizer';
 
@@ -156,15 +156,15 @@ export function App() {
   };
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-7xl flex-col gap-4 p-4 pb-28 sm:p-6 sm:pb-28 lg:p-8 lg:pb-28">
+    <div className="mx-auto flex min-h-screen max-w-7xl flex-col gap-4 p-4 pb-20 sm:p-6 sm:pb-20 lg:p-8 lg:pb-20">
       <header className="relative z-20 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <LogoDuck />
-          <div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-pond-900 dark:text-pond-50 sm:text-3xl">
+          <div className="min-w-0">
+            <h1 className="whitespace-nowrap text-xl font-extrabold tracking-tight text-pond-900 dark:text-pond-50 sm:text-3xl">
               Quack Graph
             </h1>
-            <p className="text-xs text-pond-600 dark:text-pond-300 sm:text-sm">
+            <p className="hidden text-xs text-pond-600 dark:text-pond-300 sm:block sm:text-sm">
               Graph algorithms, visualized with ducks waddling through ponds.
             </p>
           </div>
@@ -222,8 +222,16 @@ export function App() {
               <p className="text-sm text-pond-700 dark:text-pond-200">{algo?.meta.description}</p>
             </div>
             {algo && (
-              <div className="mt-3">
+              <div className="mt-3 flex flex-col gap-3">
                 <ComplexityBadges meta={algo.meta} />
+                <div className="flex flex-wrap gap-x-4 gap-y-1.5">
+                  {LEGEND_ITEMS.map(({ fill, stroke, label }) => (
+                    <span key={label} className="flex items-center gap-1.5 text-xs text-pond-600 dark:text-pond-300">
+                      <span className="inline-block h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: fill, border: `2px solid ${stroke}` }} />
+                      {label}
+                    </span>
+                  ))}
+                </div>
               </div>
             )}
           </article>
@@ -256,54 +264,21 @@ export function App() {
         </aside>
       </main>
 
-      {/* Fixed controls bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-pond-200/80 bg-white/90 px-4 py-3 shadow-lg backdrop-blur dark:border-pond-800/60 dark:bg-pond-950/90">
-        <div className="mx-auto flex max-w-7xl flex-col gap-2">
-          <div className="flex items-center gap-3">
-            <Controls
-              status={state.status}
-              canStepBack={state.stepIndex > 0}
-              canStepForward={state.stepIndex < state.events.length}
-              onToggle={togglePlay}
-              onStepBack={actions.stepBack}
-              onStepForward={actions.stepForward}
-              onReset={actions.reset}
-              onRegenerate={handleRegenerate}
-            />
-            <div className="ml-2 hidden flex-wrap gap-x-3 gap-y-1 sm:flex">
-              {[
-                { color: 'bg-yellow-300', label: 'Current' },
-                { color: 'bg-blue-300', label: 'Visited' },
-                { color: 'bg-orange-300', label: 'Finished' },
-                { color: 'bg-amber-100 ring-1 ring-amber-300', label: 'Frontier' },
-                { color: 'bg-green-400', label: 'Source' },
-                { color: 'bg-red-400', label: 'Target' },
-                { color: 'bg-yellow-400', label: 'Path' },
-                { color: 'bg-emerald-400', label: 'MST/Tree' },
-              ].map(({ color, label }) => (
-                <span key={label} className="flex items-center gap-1 text-xs text-pond-600 dark:text-pond-300">
-                  <span className={`inline-block h-2.5 w-2.5 rounded-full ${color} opacity-90`} />
-                  {label}
-                </span>
-              ))}
-            </div>
-            <div className="ml-auto flex items-center gap-4">
-              <StatsBar
-                stats={state.stats}
-                statKeys={algo?.meta.stats ?? []}
-                totalSteps={state.events.length}
-                stepIndex={state.stepIndex}
-                compact
-              />
-            </div>
-          </div>
-          <p className="hidden text-xs text-pond-500 dark:text-pond-400 sm:block">
-            <kbd className="rounded bg-pond-100 px-1 py-0.5 font-mono text-[10px] dark:bg-pond-800">Space</kbd> play/pause ·{' '}
-            <kbd className="rounded bg-pond-100 px-1 py-0.5 font-mono text-[10px] dark:bg-pond-800">←/→</kbd> step ·{' '}
-            <kbd className="rounded bg-pond-100 px-1 py-0.5 font-mono text-[10px] dark:bg-pond-800">R</kbd> reset
-          </p>
-        </div>
-      </div>
+      {/* Fixed controls bar — single row */}
+      <FooterBar
+        status={state.status}
+        canStepBack={state.stepIndex > 0}
+        canStepForward={state.stepIndex < state.events.length}
+        stepIndex={state.stepIndex}
+        totalSteps={state.events.length}
+        stats={state.stats}
+        statKeys={algo?.meta.stats ?? []}
+        onToggle={togglePlay}
+        onStepBack={actions.stepBack}
+        onStepForward={actions.stepForward}
+        onReset={actions.reset}
+        onRegenerate={handleRegenerate}
+      />
 
       <button
         type="button"
@@ -322,6 +297,120 @@ export function App() {
         onClose={() => setMobileSettingsOpen(false)}
         {...commonPanelProps}
       />
+    </div>
+  );
+}
+
+const LEGEND_ITEMS: { fill: string; stroke: string; label: string }[] = [
+  { fill: '#fde68a', stroke: '#f59e0b', label: 'Current' },
+  { fill: '#bfdbfe', stroke: '#60a5fa', label: 'Visited' },
+  { fill: '#fed7aa', stroke: '#fb923c', label: 'Finished' },
+  { fill: '#fef3c7', stroke: '#fcd34d', label: 'Frontier' },
+  { fill: '#4ade80', stroke: '#16a34a', label: 'Source' },
+  { fill: '#f87171', stroke: '#dc2626', label: 'Target' },
+  { fill: '#fde68a', stroke: '#f59e0b', label: 'Path' },
+  { fill: '#059669', stroke: '#047857', label: 'MST/Tree' },
+];
+
+function ShortcutsButton() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="relative shrink-0">
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        aria-label="Show keyboard shortcuts"
+        aria-expanded={open}
+        className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/80 text-pond-500 ring-1 ring-pond-200 transition hover:bg-white dark:bg-pond-800/70 dark:text-pond-400 dark:ring-pond-700/60 dark:hover:bg-pond-800"
+      >
+        <svg viewBox="0 0 24 24" width={14} height={14} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+          <rect x="2" y="6" width="20" height="13" rx="2" /><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8" />
+        </svg>
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div className="absolute bottom-full right-0 z-50 mb-2 w-48 rounded-xl bg-pond-900 p-3 text-xs text-white shadow-xl dark:bg-pond-800">
+            <p className="mb-1.5 font-semibold uppercase tracking-wide text-pond-400">Shortcuts</p>
+            <div className="space-y-1 text-pond-200">
+              <div className="flex justify-between"><span>Play / pause</span><kbd className="rounded bg-pond-700 px-1 font-mono">Space</kbd></div>
+              <div className="flex justify-between"><span>Step</span><kbd className="rounded bg-pond-700 px-1 font-mono">← →</kbd></div>
+              <div className="flex justify-between"><span>Reset</span><kbd className="rounded bg-pond-700 px-1 font-mono">R</kbd></div>
+            </div>
+            <div className="absolute -bottom-1.5 right-3 border-4 border-transparent border-t-pond-900 dark:border-t-pond-800" />
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+interface FooterBarProps {
+  status: RunnerStatus;
+  canStepBack: boolean;
+  canStepForward: boolean;
+  stepIndex: number;
+  totalSteps: number;
+  stats: RunnerStats;
+  statKeys: string[];
+  onToggle: () => void;
+  onStepBack: () => void;
+  onStepForward: () => void;
+  onReset: () => void;
+  onRegenerate: () => void;
+}
+
+function FooterBar({
+  status, canStepBack, canStepForward, stepIndex, totalSteps, stats, statKeys,
+  onToggle, onStepBack, onStepForward, onReset, onRegenerate,
+}: FooterBarProps) {
+  const pct = totalSteps ? Math.min(100, Math.floor((stepIndex / totalSteps) * 100)) : 0;
+
+  return (
+    <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-pond-200/80 bg-white/90 px-4 py-2 shadow-lg backdrop-blur dark:border-pond-800/60 dark:bg-pond-950/90">
+      <div className="mx-auto flex max-w-7xl items-center gap-3">
+        <Controls
+          status={status}
+          canStepBack={canStepBack}
+          canStepForward={canStepForward}
+          onToggle={onToggle}
+          onStepBack={onStepBack}
+          onStepForward={onStepForward}
+          onReset={onReset}
+          onRegenerate={onRegenerate}
+        />
+
+        <span className="h-6 w-px shrink-0 bg-pond-200 dark:bg-pond-700" />
+
+        {/* Progress bar fills remaining space */}
+        <div className="flex min-w-0 flex-1 items-center gap-2">
+          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-pond-200 dark:bg-pond-800">
+            <div className="h-full rounded-full bg-duck-400 transition-[width]" style={{ width: `${pct}%` }} />
+          </div>
+          <span className="w-8 shrink-0 text-right font-mono text-xs tabular-nums text-pond-600 dark:text-pond-300">{pct}%</span>
+        </div>
+
+        {/* Per-algorithm stats (up to 3, desktop only) */}
+        {statKeys.length > 0 && (
+          <>
+            <span className="hidden h-6 w-px shrink-0 bg-pond-200 dark:bg-pond-700 sm:block" />
+            <div className="hidden items-center gap-5 sm:flex">
+              {statKeys.slice(0, 3).map(k => (
+                <div key={k} className="flex flex-col items-start">
+                  <span className="text-[10px] uppercase tracking-wide text-pond-500 dark:text-pond-400">
+                    {k.replace(/([A-Z])/g, ' $1').toLowerCase()}
+                  </span>
+                  <span className="font-mono text-sm font-semibold tabular-nums text-pond-900 dark:text-pond-50">
+                    {(stats[k] ?? 0).toLocaleString()}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        <ShortcutsButton />
+      </div>
     </div>
   );
 }

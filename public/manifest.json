@@ -1,14 +1,14 @@
 {
-  "name": "Quack Sort",
-  "short_name": "Quack Sort",
-  "description": "Sorting algorithms, visualized with stacks of ducks.",
-  "start_url": "/quack-sort/",
+  "name": "Quack Graph",
+  "short_name": "Quack Graph",
+  "description": "Graph algorithms, visualized with ducks waddling through ponds.",
+  "start_url": "/quack-graph/",
   "display": "standalone",
   "background_color": "#e0f2fe",
   "theme_color": "#fbbf24",
   "icons": [
     {
-      "src": "/quack-sort/duck.svg",
+      "src": "/quack-graph/duck.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"

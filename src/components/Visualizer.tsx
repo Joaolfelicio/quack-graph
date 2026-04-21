@@ -188,9 +188,8 @@ export const Visualizer = memo(function Visualizer({ graph, visual, topoOrder, s
     <div className="relative w-full" style={{ height: size.h }}>
       <svg
         ref={containerRef}
-        width={size.w}
-        height={size.h}
-        className="w-full"
+        viewBox={`0 0 ${size.w} ${size.h}`}
+        className="h-full w-full"
         aria-label="Graph visualization"
       >
         <defs>
