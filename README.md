@@ -1,29 +1,28 @@
-# Quack Sort 🦆
+# Quack Graph 🦆
 
-[![Deploy to GitHub Pages](https://github.com/Joaolfelicio/quack-sort/actions/workflows/deploy.yml/badge.svg)](https://github.com/Joaolfelicio/quack-sort/actions/workflows/deploy.yml)
+[![Deploy to GitHub Pages](https://github.com/Joaolfelicio/quack-graph/actions/workflows/deploy.yml/badge.svg)](https://github.com/Joaolfelicio/quack-graph/actions/workflows/deploy.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## 🚀 Live Demo
-**Play now:** [https://joaolfelicio.github.io/quack-sort/](https://joaolfelicio.github.io/quack-sort/)
+**Play now:** [https://joaolfelicio.github.io/quack-graph/](https://joaolfelicio.github.io/quack-graph/)
 
-Sorting algorithms, visualized with stacks of ducks. 
+Graph algorithms, visualized with ducks waddling through ponds.
 
-Each column is an item; its value is the number of ducks in the stack. Watch short stacks shuffle to the left and tall stacks waddle to the right in real-time.
+Nodes are lily pads, edges are streams, and a duck mascot waddles along each traversal step in real time.
 
-![Quack Sort Dark Mode](public/screenshot-dark.png)
+![Quack Graph Dark Mode](public/screenshot-dark.png)
 
 ## Features
 
-- **16 Sorting Algorithms:** Bubble, Cocktail Shaker, Insertion, Selection, Gnome, Odd-Even, Comb, Shell, Merge, Quick, Heap, Pancake, Counting, Radix (LSD), Bucket Sort, and more.
-- **Interactive Controls:** Play, Pause, Step forward, Step back, Reset, and Shuffle.
-- **Adjustable Parameters:** Control item count, animation speed, and initial array distribution (random, nearly-sorted, reversed, few-unique, and **custom values**).
-- **Educational:** Includes Big-O complexity badges (best / average / worst / space) and stability / in-place indicators for every algorithm.
-- **Live Stats:** Tracks comparisons, swaps, writes, elapsed time, and progress percentage.
-- **Accessible & Customizable:** Dark mode (persisted in `localStorage`), fully keyboard navigable, and optional WebAudio sound effects (quack on swap, splash on compare).
+- **12 Graph Algorithms:** BFS, DFS, Dijkstra, Bellman-Ford, A\*, Prim, Kruskal, Topological Sort (Kahn & DFS), Tarjan SCC, Union-Find, and Edmonds-Karp Max Flow.
+- **Interactive Controls:** Play, Pause, Step forward, Step back, Reset, and Regenerate graph.
+- **Graph Variety:** 8 hand-authored presets (tree, DAG, weighted mesh, negative cycle, grid, SCC, flow network, disconnected) plus a seeded random generator.
+- **URL-Shareable State:** Algorithm, graph, and speed are synced to the URL — paste to share exact state.
+- **Educational:** Complexity badges (best / average / worst / space) and directed / weighted indicators per algorithm. Color-coded node and edge roles with in-page legend.
+- **Live Stats:** Per-algorithm counters (visited, enqueued, relaxed, MST edges, flow, etc.) and elapsed time.
+- **Accessible & Customizable:** Dark mode (persisted in `localStorage`), keyboard shortcuts (Space / ←→ / R), and optional WebAudio sound effects.
 
 ## Getting Started
-
-To run the application locally:
 
 ```bash
 # Install dependencies
@@ -32,7 +31,7 @@ npm install
 # Start the Vite development server
 npm run dev
 
-# Run unit tests (one test per algorithm generator)
+# Run unit tests
 npm test
 
 # Build for production (outputs to dist/)
@@ -41,11 +40,9 @@ npm run build
 
 ## Adding a New Algorithm
 
-The application is heavily data-driven. To add a new algorithm, you just need to write the logic and register it:
-
-1. Create a new file `src/algorithms/<name>.ts`. Export a `SortAlgorithm` object where the `run` property is a generator function yielding `SortEvent`s.
-2. Append your new algorithm to the exported list in `src/algorithms/index.ts`.
-3. Add a test in `src/algorithms/__tests__/sorts.test.ts`. The test suite iterates over the registry automatically, so new algorithms are picked up for free!
+1. Create `src/algorithms/<name>.ts`. Export a `GraphAlgorithm` object where `run` is a generator yielding `GraphEvent`s.
+2. Register it in `src/algorithms/index.ts`.
+3. Add a test in `src/algorithms/__tests__/graphs.test.ts` — the suite iterates the registry automatically.
 
 ## License
 
