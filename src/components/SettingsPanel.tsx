@@ -84,8 +84,8 @@ export function SettingsPanel({
 
       <div className="flex flex-col gap-2">
         <label className="text-xs font-semibold uppercase tracking-wide text-pond-600 dark:text-pond-300">Sound</label>
-        <div className="flex items-center justify-between gap-2 rounded-xl border border-pond-200 bg-pond-50/80 px-3 py-2 dark:border-pond-700 dark:bg-pond-800/40">
-          <span className="text-xs text-pond-600 dark:text-pond-300">Quack on visit, splash on consider</span>
+        <div className="flex items-center justify-between gap-2 rounded-xl bg-pond-100/70 px-3 py-2 dark:bg-pond-800/60">
+          <span className="text-sm font-medium text-pond-800 dark:text-pond-100">Quack on visit, splash on consider</span>
           <button
             type="button"
             role="switch"
