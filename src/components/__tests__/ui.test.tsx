@@ -9,11 +9,11 @@ import type { Graph } from '../../lib/graph';
 
 // jsdom doesn't implement ResizeObserver
 beforeAll(() => {
-  global.ResizeObserver = class {
+  vi.stubGlobal('ResizeObserver', class {
     observe() {}
     unobserve() {}
     disconnect() {}
-  };
+  });
 });
 
 // ---------------------------------------------------------------------------
