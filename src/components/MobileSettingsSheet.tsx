@@ -18,6 +18,7 @@ interface Props {
   onSoundToggle: (on: boolean) => void;
   onSourceNodeChange: (n: number) => void;
   onTargetNodeChange: (n: number) => void;
+  onReset: () => void;
 }
 
 export function MobileSettingsSheet({ open, onClose, ...panelProps }: Props) {

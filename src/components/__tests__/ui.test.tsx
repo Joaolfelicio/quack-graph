@@ -219,6 +219,7 @@ describe('SettingsPanel', () => {
     onSoundToggle: noop,
     onSourceNodeChange: noop,
     onTargetNodeChange: noop,
+    onReset: noop,
   };
 
   it('renders speed label', () => {

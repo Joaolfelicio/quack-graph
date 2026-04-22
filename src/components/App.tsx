@@ -154,6 +154,7 @@ export function App() {
     onSoundToggle: setSoundEnabled,
     onSourceNodeChange: actions.setSourceNode,
     onTargetNodeChange: actions.setTargetNode,
+    onReset: actions.reset,
   };
 
   return (
@@ -310,7 +311,7 @@ function NodeInteractionHint() {
   }, [open]);
 
   return (
-    <div ref={ref} className="absolute bottom-3 right-3 z-10">
+    <div ref={ref} className="absolute top-3 right-3 z-10">
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
@@ -323,7 +324,8 @@ function NodeInteractionHint() {
         </svg>
       </button>
       {open && (
-        <div className="absolute bottom-full right-0 z-50 mb-2 w-52 rounded-xl bg-pond-900 p-3 text-xs text-white shadow-xl dark:bg-pond-800">
+        <div className="absolute top-full right-0 z-50 mt-2 w-52 rounded-xl bg-pond-900 p-3 text-xs text-white shadow-xl dark:bg-pond-800">
+          <div className="absolute -top-1.5 right-3 border-4 border-transparent border-b-pond-900 dark:border-b-pond-800" />
           <p className="mb-1.5 font-semibold uppercase tracking-wide text-pond-400">Node interaction</p>
           <div className="space-y-1 text-pond-200">
             <div className="flex justify-between"><span>Set source</span><span className="text-pond-400">Click</span></div>
@@ -331,7 +333,6 @@ function NodeInteractionHint() {
             <div className="flex justify-between"><span>Navigate</span><span className="text-pond-400">Tab</span></div>
             <div className="flex justify-between"><span>Select</span><span className="text-pond-400">Enter / Space</span></div>
           </div>
-          <div className="absolute -bottom-1.5 right-3 border-4 border-transparent border-t-pond-900 dark:border-t-pond-800" />
         </div>
       )}
     </div>

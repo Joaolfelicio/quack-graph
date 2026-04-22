@@ -16,6 +16,7 @@ interface Props {
   onSoundToggle: (on: boolean) => void;
   onSourceNodeChange: (n: number) => void;
   onTargetNodeChange: (n: number) => void;
+  onReset: () => void;
 }
 
 const SPEED_STEPS = [0.25, 0.5, 1, 2, 4, 8, 16];
@@ -23,7 +24,7 @@ const SPEED_STEPS = [0.25, 0.5, 1, 2, 4, 8, 16];
 export function SettingsPanel({
   algorithmId, graphSource, speed, soundEnabled, sourceNode, targetNode, nodeCount,
   onAlgorithmChange, onGraphSourceChange, onSpeedChange, onSoundToggle,
-  onSourceNodeChange, onTargetNodeChange,
+  onSourceNodeChange, onTargetNodeChange, onReset,
 }: Props) {
   const speedLabel = `${speed}×`;
 
@@ -93,6 +94,14 @@ export function SettingsPanel({
           <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow transition-transform ${soundEnabled ? 'translate-x-4' : 'translate-x-1'}`} />
         </button>
       </div>
+
+      <button
+        type="button"
+        onClick={onReset}
+        className="mt-1 w-full rounded-xl border border-pond-200 bg-pond-50/80 px-3 py-2 text-xs font-medium text-pond-600 transition hover:bg-pond-100 dark:border-pond-700 dark:bg-pond-800/60 dark:text-pond-300 dark:hover:bg-pond-800"
+      >
+        Reset algorithm
+      </button>
     </div>
   );
 }
