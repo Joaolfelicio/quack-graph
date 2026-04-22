@@ -3,6 +3,7 @@ import { ALGORITHMS, ALGORITHMS_BY_ID } from '../index';
 import { getPreset } from '../../lib/graphs';
 import { UnionFind } from '../../lib/graph';
 import type { GraphEvent } from '../types';
+import { emptyVisual, applyEventForward, buildVisualAndSnapshots, recomputeToIndex } from '../../hooks/useGraphRunner';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -368,6 +369,90 @@ describe('Event replay consistency', () => {
         expect(d).toBeGreaterThanOrEqual(0);
         expect(Number.isFinite(d)).toBe(true);
       }
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Reducer: step-back / reversibility
+// ---------------------------------------------------------------------------
+
+describe('Reducer reversibility', () => {
+  function runAlgo(id: string, presetId: string, opts = {}) {
+    const algo = ALGORITHMS_BY_ID[id];
+    const graph = getPreset(presetId as any);
+    const events = Array.from(algo.run(graph, opts));
+    const { snapshots } = buildVisualAndSnapshots(events);
+    return { events, snapshots };
+  }
+
+  it('recomputeToIndex(0) returns empty visual', () => {
+    const state = runAlgo('bfs', 'tree-8', { source: 0 });
+    const { visual } = recomputeToIndex(state, 0);
+    expect(visual).toEqual(emptyVisual());
+  });
+
+  it('stepping forward then back to 0 gives empty visual', () => {
+    const state = runAlgo('dijkstra', 'weighted-mesh-9', { source: 0 });
+    const midpoint = Math.floor(state.events.length / 2);
+
+    // Recompute to midpoint, then back to 0
+    const { visual: atMid } = recomputeToIndex(state, midpoint);
+    // Sanity: midpoint should have some visited nodes
+    expect(Object.keys(atMid.nodeRoles).length).toBeGreaterThan(0);
+
+    const { visual: backToStart } = recomputeToIndex(state, 0);
+    expect(backToStart).toEqual(emptyVisual());
+  });
+
+  it('forward replay equals snapshot-based recompute at every SNAPSHOT_INTERVAL', () => {
+    const state = runAlgo('bfs', 'tree-8', { source: 0 });
+    const { events } = state;
+
+    // Build visual by forward replay to each checkpoint
+    const forwardVisual = emptyVisual();
+    const forwardStats = { elapsedMs: 0 };
+
+    for (let i = 0; i < events.length; i++) {
+      applyEventForward(forwardVisual, forwardStats, events[i]);
+
+      // At every 10th step, compare with recomputeToIndex
+      if ((i + 1) % 10 === 0) {
+        const { visual: recomputed } = recomputeToIndex(state, i + 1);
+        expect(recomputed.nodeRoles).toEqual(forwardVisual.nodeRoles);
+        expect(recomputed.edgeRoles).toEqual(forwardVisual.edgeRoles);
+        expect(recomputed.dist).toEqual(forwardVisual.dist);
+      }
+    }
+  });
+
+  it('recomputeToIndex at end matches full forward replay — Dijkstra', () => {
+    const state = runAlgo('dijkstra', 'weighted-mesh-9', { source: 0 });
+    const { events } = state;
+
+    const forwardVisual = emptyVisual();
+    const forwardStats = { elapsedMs: 0 };
+    for (const ev of events) applyEventForward(forwardVisual, forwardStats, ev);
+
+    const { visual: recomputed } = recomputeToIndex(state, events.length);
+    expect(recomputed.dist).toEqual(forwardVisual.dist);
+    expect(recomputed.nodeRoles).toEqual(forwardVisual.nodeRoles);
+  });
+
+  it('step back from any position always matches fresh recompute — DFS', () => {
+    const state = runAlgo('dfs', 'scc-8', { source: 0 });
+    const { events } = state;
+
+    // Test at several arbitrary positions
+    const positions = [1, 5, 10, Math.floor(events.length / 3), Math.floor(events.length * 2 / 3), events.length];
+    for (const pos of positions) {
+      const { visual } = recomputeToIndex(state, pos);
+      // Rebuild independently from scratch to verify
+      const freshVisual = emptyVisual();
+      const freshStats = { elapsedMs: 0 };
+      for (let i = 0; i < pos; i++) applyEventForward(freshVisual, freshStats, events[i]);
+      expect(visual.nodeRoles).toEqual(freshVisual.nodeRoles);
+      expect(visual.stack).toEqual(freshVisual.stack);
     }
   });
 });

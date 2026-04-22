@@ -1,4 +1,4 @@
-import { memo, useRef, useState, useEffect } from 'react';
+import { memo, useRef, useState, useEffect, useMemo } from 'react';
 import type { Graph } from '../lib/graph';
 import type { GraphVisualState } from '../hooks/useGraphRunner';
 import type { NodeRole, EdgeRole } from '../algorithms/types';
@@ -14,6 +14,7 @@ interface Props {
   showDuck: boolean;
   sourceNode?: number;
   targetNode?: number;
+  onNodeClick?: (id: number, shiftKey: boolean) => void;
 }
 
 /**
@@ -89,7 +90,7 @@ function computeEdgePath(
 
 function arrowId(role: EdgeRole) { return `arrow-${role}`; }
 
-export const Visualizer = memo(function Visualizer({ graph, visual, showDuck, sourceNode, targetNode }: Props) {
+export const Visualizer = memo(function Visualizer({ graph, visual, showDuck, sourceNode, targetNode, onNodeClick }: Props) {
   const containerRef = useRef<SVGSVGElement>(null);
   const [size, setSize] = useState({ w: 800, h: 500 });
 
@@ -105,32 +106,39 @@ export const Visualizer = memo(function Visualizer({ graph, visual, showDuck, so
   }, []);
 
   const nodes = graph.nodes;
-  const allX = nodes.map(n => n.x);
-  const allY = nodes.map(n => n.y);
-  const minX = Math.min(...allX), maxX = Math.max(...allX);
-  const minY = Math.min(...allY), maxY = Math.max(...allY);
-  const pad = 60;
-  const scaleX = nodes.length > 1 ? (size.w - 2 * pad) / Math.max(1, maxX - minX) : 1;
-  const scaleY = nodes.length > 1 ? (size.h - 2 * pad) / Math.max(1, maxY - minY) : 1;
-  const scale = Math.min(scaleX, scaleY, 1.8);
 
-  function sx(x: number) { return pad + (x - minX) * scale; }
-  function sy(y: number) { return pad + (y - minY) * scale; }
+  // Recompute only when graph or viewport size changes (not every animation frame)
+  const { sx, sy, edgePaths } = useMemo(() => {
+    const allX = nodes.map(n => n.x);
+    const allY = nodes.map(n => n.y);
+    const minX = Math.min(...allX), maxX = Math.max(...allX);
+    const minY = Math.min(...allY), maxY = Math.max(...allY);
+    const pad = 60;
+    const scaleX = nodes.length > 1 ? (size.w - 2 * pad) / Math.max(1, maxX - minX) : 1;
+    const scaleY = nodes.length > 1 ? (size.h - 2 * pad) / Math.max(1, maxY - minY) : 1;
+    const scale = Math.min(scaleX, scaleY, 1.8);
+    const sxFn = (x: number) => pad + (x - minX) * scale;
+    const syFn = (y: number) => pad + (y - minY) * scale;
 
-  const edgePairs = new Set<string>();
-  for (const e of graph.edges) edgePairs.add(`${e.u}-${e.v}`);
-  function hasTwin(u: number, v: number) {
-    return graph.directed && edgePairs.has(`${v}-${u}`);
-  }
+    const pairs = new Set<string>();
+    for (const e of graph.edges) pairs.add(`${e.u}-${e.v}`);
 
-  const lastVisited = (() => {
+    const paths = graph.edges.map(e => {
+      const twin = graph.directed && pairs.has(`${e.v}-${e.u}`);
+      return computeEdgePath(sxFn(nodes[e.u].x), syFn(nodes[e.u].y), sxFn(nodes[e.v].x), syFn(nodes[e.v].y), graph.directed, twin);
+    });
+
+    return { sx: sxFn, sy: syFn, edgePaths: paths };
+  }, [graph, size]);
+
+  const lastVisited = useMemo(() => {
     const entries = Object.entries(visual.nodeRoles);
     for (let i = entries.length - 1; i >= 0; i--) {
       const [id, role] = entries[i];
       if (role === 'current' || role === 'visited') return Number(id);
     }
     return null;
-  })();
+  }, [visual.nodeRoles]);
 
   const edgeRoles = Object.keys(EDGE_STROKE) as EdgeRole[];
 
@@ -158,10 +166,7 @@ export const Visualizer = memo(function Visualizer({ graph, visual, showDuck, so
 
         {graph.edges.map(e => {
           const role: EdgeRole = (visual.edgeRoles[e.id] as EdgeRole) ?? 'default';
-          const x1 = sx(nodes[e.u].x), y1 = sy(nodes[e.u].y);
-          const x2 = sx(nodes[e.v].x), y2 = sy(nodes[e.v].y);
-          const twin = hasTwin(e.u, e.v);
-          const { d, labelX, labelY } = computeEdgePath(x1, y1, x2, y2, graph.directed, twin);
+          const { d, labelX, labelY } = edgePaths[e.id];
           const stroke = EDGE_STROKE[role] ?? EDGE_STROKE.default;
           const sw = EDGE_WIDTH[role] ?? 1.5;
           const flowInfo = visual.flow[e.id];
@@ -214,16 +219,41 @@ export const Visualizer = memo(function Visualizer({ graph, visual, showDuck, so
             ? (fin !== undefined ? `${disc}/${fin}` : `${disc}/…`)
             : null;
 
+          const distLabel = dist !== undefined && dist !== null
+            ? (dist === Infinity ? '∞' : dist.toFixed(dist % 1 === 0 ? 0 : 1))
+            : null;
+          const nodeAriaLabel = [
+            `Node ${n.id}`,
+            role !== 'default' ? role : null,
+            distLabel ? `distance ${distLabel}` : null,
+            n.id === sourceNode ? 'source' : n.id === targetNode ? 'target' : null,
+          ].filter(Boolean).join(', ');
+
           return (
-            <g key={n.id} transform={`translate(${cx},${cy})`}>
+            <g
+              key={n.id}
+              transform={`translate(${cx},${cy})`}
+              tabIndex={0}
+              role="button"
+              aria-label={nodeAriaLabel}
+              className="group cursor-pointer focus:outline-none"
+              onClick={e => onNodeClick?.(n.id, e.shiftKey)}
+              onKeyDown={e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onNodeClick?.(n.id, e.shiftKey);
+                }
+              }}
+            >
+              <circle r={NODE_R + 8} fill="none" stroke="#3b82f6" strokeWidth={2} strokeDasharray="4 2" opacity={0} className="group-focus-visible:opacity-100" />
               <ellipse rx={NODE_R + 6} ry={NODE_R + 3} fill="#86efac" opacity={0.4} />
               <circle r={NODE_R} fill={effectiveFill} stroke={effectiveStroke} strokeWidth={NODE_STROKE_WIDTH[role] ?? 2} />
               <text textAnchor="middle" dominantBaseline="central" fontSize="12" fontWeight="bold" fill="#1e3a5f" className="select-none">
                 {n.id}
               </text>
-              {dist !== undefined && dist !== null && (
+              {distLabel !== null && (
                 <text y={-NODE_R - 8} textAnchor="middle" fontSize="10" fill={stroke} fontWeight="600" className="select-none">
-                  {dist === Infinity ? '∞' : dist.toFixed(dist % 1 === 0 ? 0 : 1)}
+                  {distLabel}
                 </text>
               )}
               {dfLabel && (

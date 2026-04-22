@@ -33,7 +33,7 @@ interface StateSnapshot {
   stats: RunnerStats;
 }
 
-const SNAPSHOT_INTERVAL = 100;
+const MAX_SNAPSHOTS = 500;
 const MAX_EVENTS = 50_000;
 
 export type GraphSource =
@@ -67,9 +67,10 @@ type Action =
   | { type: 'reset' }
   | { type: 'step-forward' }
   | { type: 'step-back' }
+  | { type: 'jump-to'; index: number }
   | { type: 'advance'; steps: number; dtMs: number };
 
-function emptyVisual(): GraphVisualState {
+export function emptyVisual(): GraphVisualState {
   return { nodeRoles: {}, edgeRoles: {}, dist: {}, parent: {}, mstEdges: [], topoOrder: [], sccGroup: {}, stack: [], flow: {}, disc: {}, fin: {} };
 }
 
@@ -89,7 +90,7 @@ function cloneVisual(v: GraphVisualState): GraphVisualState {
   };
 }
 
-function applyEventForward(visual: GraphVisualState, stats: RunnerStats, event: GraphEvent): void {
+export function applyEventForward(visual: GraphVisualState, stats: RunnerStats, event: GraphEvent): void {
   switch (event.type) {
     case 'visit-node':
       visual.nodeRoles[event.node] = 'visited';
@@ -184,16 +185,17 @@ function applyEventForward(visual: GraphVisualState, stats: RunnerStats, event: 
   }
 }
 
-function buildVisualAndSnapshots(events: GraphEvent[]): { initial: GraphVisualState; snapshots: StateSnapshot[] } {
+export function buildVisualAndSnapshots(events: GraphEvent[]): { initial: GraphVisualState; snapshots: StateSnapshot[] } {
   const visual = emptyVisual();
   const stats: RunnerStats = { elapsedMs: 0 };
   const snapshots: StateSnapshot[] = [];
+  const interval = Math.max(1, Math.ceil(events.length / MAX_SNAPSHOTS));
 
   snapshots.push({ stepIndex: 0, visual: cloneVisual(visual), stats: { ...stats } });
 
   for (let k = 0; k < events.length; k++) {
     applyEventForward(visual, stats, events[k]);
-    if ((k + 1) % SNAPSHOT_INTERVAL === 0) {
+    if ((k + 1) % interval === 0) {
       snapshots.push({ stepIndex: k + 1, visual: cloneVisual(visual), stats: { ...stats } });
     }
   }
@@ -238,9 +240,14 @@ function rebuild(state: RunnerState, graph: Graph, algorithmId: string, sourceNo
   };
 }
 
-function recomputeToIndex(state: RunnerState, targetIndex: number): { visual: GraphVisualState; stats: RunnerStats } {
-  const snapshotIdx = Math.max(0, Math.floor(targetIndex / SNAPSHOT_INTERVAL) - 1);
-  const snap = state.snapshots[snapshotIdx] ?? state.snapshots[0];
+export function recomputeToIndex(state: Pick<RunnerState, 'events' | 'snapshots'>, targetIndex: number): { visual: GraphVisualState; stats: RunnerStats } {
+  // Binary-search for the latest snapshot at or before targetIndex
+  let lo = 0, hi = state.snapshots.length - 1;
+  while (lo < hi) {
+    const mid = (lo + hi + 1) >> 1;
+    if (state.snapshots[mid].stepIndex <= targetIndex) lo = mid; else hi = mid - 1;
+  }
+  const snap = state.snapshots[lo];
 
   const visual = cloneVisual(snap.visual);
   const stats: RunnerStats = { ...snap.stats };
@@ -297,6 +304,13 @@ function reducer(state: RunnerState, action: Action): RunnerState {
       const targetIndex = state.stepIndex - 1;
       const { visual, stats } = recomputeToIndex(state, targetIndex);
       return { ...state, visual, stats: { ...stats, elapsedMs: state.stats.elapsedMs }, stepIndex: targetIndex, status: 'paused' };
+    }
+    case 'jump-to': {
+      const targetIndex = Math.max(0, Math.min(state.events.length, action.index));
+      if (targetIndex === state.stepIndex) return state;
+      const { visual, stats } = recomputeToIndex(state, targetIndex);
+      const done = targetIndex >= state.events.length;
+      return { ...state, visual, stats: { ...stats, elapsedMs: state.stats.elapsedMs }, stepIndex: targetIndex, status: done ? 'done' : 'paused' };
     }
     case 'advance': {
       if (state.status !== 'playing') return state;
@@ -388,6 +402,7 @@ export function useGraphRunner(args: UseGraphRunnerArgs) {
       reset: () => dispatch({ type: 'reset' }),
       stepForward: () => dispatch({ type: 'step-forward' }),
       stepBack: () => dispatch({ type: 'step-back' }),
+      jumpTo: (index: number) => dispatch({ type: 'jump-to', index }),
     }),
     [],
   );

@@ -36,6 +36,16 @@ body {
   @apply outline-none ring-2 ring-pond-400 ring-offset-2 ring-offset-pond-50 dark:ring-offset-pond-950 rounded-md;
 }
 
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* Range sliders */
 input[type='range'] {
   @apply h-2 w-full cursor-pointer appearance-none rounded-full bg-pond-200 dark:bg-pond-800;

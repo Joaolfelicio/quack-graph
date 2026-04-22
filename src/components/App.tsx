@@ -66,6 +66,7 @@ function parseInitialAlgo(): string {
 
 export function App() {
   const { theme, toggle } = useDarkMode();
+  const showDuck = new URLSearchParams(window.location.search).get('duck') !== '0';
   const [soundEnabled, setSoundEnabled] = useState(() => readBool(LS.sound, false));
   const [mobileSettingsOpen, setMobileSettingsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -79,16 +80,10 @@ export function App() {
 
   const algo = ALGORITHMS_BY_ID[state.algorithmId];
 
-  useEffect(() => {
-    if (copied) {
-      const t = setTimeout(() => setCopied(false), 2000);
-      return () => clearTimeout(t);
-    }
-  }, [copied]);
-
   const handleShare = useCallback(() => {
-    navigator.clipboard.writeText(window.location.href);
+    try { navigator.clipboard?.writeText(window.location.href)?.catch(() => {}); } catch { /* clipboard unavailable */ }
     setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   }, []);
 
   const handleRegenerate = useCallback(() => {
@@ -132,13 +127,21 @@ export function App() {
       const tag = (e.target as HTMLElement)?.tagName;
       if (tag === 'INPUT' || tag === 'SELECT') return;
       if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
-      else if (e.key === 'ArrowRight') { e.preventDefault(); actions.stepForward(); }
-      else if (e.key === 'ArrowLeft') { e.preventDefault(); actions.stepBack(); }
+      else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        if (e.shiftKey) actions.jumpTo(state.stepIndex + 10);
+        else actions.stepForward();
+      }
+      else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        if (e.shiftKey) actions.jumpTo(state.stepIndex - 10);
+        else actions.stepBack();
+      }
       else if (e.key.toLowerCase() === 'r') actions.reset();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [actions, togglePlay]);
+  }, [actions, togglePlay, state.stepIndex]);
 
   const commonPanelProps = {
     algorithmId: state.algorithmId,
@@ -186,11 +189,6 @@ export function App() {
                 <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
                 <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
               </svg>
-            )}
-            {copied && (
-              <span className="absolute -top-10 left-1/2 z-50 -translate-x-1/2 rounded-lg bg-pond-900 px-2 py-1 text-[10px] font-medium text-white shadow-lg dark:bg-pond-50 dark:text-pond-950">
-                Copied!
-              </span>
             )}
           </button>
           <a
@@ -241,9 +239,10 @@ export function App() {
             <Visualizer
               graph={state.graph}
               visual={state.visual}
-              showDuck={true}
+              showDuck={showDuck}
               sourceNode={state.source}
               targetNode={state.target}
+              onNodeClick={(id, shiftKey) => shiftKey ? actions.setTargetNode(id) : actions.setSourceNode(id)}
             />
           </div>
 
@@ -295,6 +294,13 @@ export function App() {
         </svg>
       </button>
 
+      {copied && (
+        <div className="fixed right-4 top-16 z-[200] w-44 rounded-lg bg-pond-900 px-3 py-2 text-center text-[10px] font-medium leading-snug text-white shadow-xl dark:bg-pond-800">
+          <span className="block font-semibold text-emerald-400">Copied!</span>
+          <span className="block text-pond-400 dark:text-pond-300">Algo &amp; graph saved — step position is not</span>
+        </div>
+      )}
+
       <MobileSettingsSheet
         open={mobileSettingsOpen}
         onClose={() => setMobileSettingsOpen(false)}
@@ -326,7 +332,8 @@ function ShortcutsButton() {
             <p className="mb-1.5 font-semibold uppercase tracking-wide text-pond-400">Shortcuts</p>
             <div className="space-y-1 text-pond-200">
               <div className="flex justify-between"><span>Play / pause</span><kbd className="rounded bg-pond-700 px-1 font-mono">Space</kbd></div>
-              <div className="flex justify-between"><span>Step</span><kbd className="rounded bg-pond-700 px-1 font-mono">← →</kbd></div>
+              <div className="flex justify-between"><span>Step 1</span><kbd className="rounded bg-pond-700 px-1 font-mono">← →</kbd></div>
+              <div className="flex justify-between"><span>Step 10</span><kbd className="rounded bg-pond-700 px-1 font-mono">⇧← →</kbd></div>
               <div className="flex justify-between"><span>Reset</span><kbd className="rounded bg-pond-700 px-1 font-mono">R</kbd></div>
             </div>
             <div className="absolute -bottom-1.5 right-3 border-4 border-transparent border-t-pond-900 dark:border-t-pond-800" />
