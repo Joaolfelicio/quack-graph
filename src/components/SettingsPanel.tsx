@@ -82,17 +82,20 @@ export function SettingsPanel({
         </div>
       </div>
 
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold uppercase tracking-wide text-pond-600 dark:text-pond-300">Sound</span>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={soundEnabled}
-          onClick={() => onSoundToggle(!soundEnabled)}
-          className={`relative inline-flex h-5 w-9 items-center rounded-full transition ${soundEnabled ? 'bg-duck-400' : 'bg-pond-300 dark:bg-pond-700'}`}
-        >
-          <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow transition-transform ${soundEnabled ? 'translate-x-4' : 'translate-x-1'}`} />
-        </button>
+      <div className="flex flex-col gap-2">
+        <label className="text-xs font-semibold uppercase tracking-wide text-pond-600 dark:text-pond-300">Sound</label>
+        <div className="flex items-center justify-between gap-2 rounded-xl border border-pond-200 bg-pond-50/80 px-3 py-2 dark:border-pond-700 dark:bg-pond-800/40">
+          <span className="text-xs text-pond-600 dark:text-pond-300">Quack on visit, splash on consider</span>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={soundEnabled}
+            onClick={() => onSoundToggle(!soundEnabled)}
+            className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition ${soundEnabled ? 'bg-duck-400' : 'bg-pond-300 dark:bg-pond-700'}`}
+          >
+            <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow transition-transform ${soundEnabled ? 'translate-x-4' : 'translate-x-1'}`} />
+          </button>
+        </div>
       </div>
 
       <button
@@ -100,7 +103,7 @@ export function SettingsPanel({
         onClick={onReset}
         className="mt-1 w-full rounded-xl border border-pond-200 bg-pond-50/80 px-3 py-2 text-xs font-medium text-pond-600 transition hover:bg-pond-100 dark:border-pond-700 dark:bg-pond-800/60 dark:text-pond-300 dark:hover:bg-pond-800"
       >
-        Reset algorithm
+        Reset to defaults
       </button>
     </div>
   );
