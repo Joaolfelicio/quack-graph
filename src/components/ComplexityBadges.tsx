@@ -15,9 +15,9 @@ function complexityTone(value: string): string {
 function Badge({ label, value, tone, tooltip }: { label: string; value: string; tone: string; tooltip: string }) {
   return (
     <div className="group relative">
-      <div className={`flex min-w-[5rem] flex-col rounded-xl px-3 py-2 ring-1 ${tone}`}>
+      <div className={`flex w-24 flex-col rounded-xl px-3 py-2 ring-1 ${tone}`}>
         <span className="text-[10px] uppercase tracking-wide opacity-70">{label}</span>
-        <span className="font-mono text-sm font-semibold whitespace-nowrap">{value}</span>
+        <span className="truncate font-mono text-sm font-semibold">{value}</span>
       </div>
       <div role="tooltip" className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 w-48 -translate-x-1/2 rounded-lg bg-pond-900 px-3 py-2 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 dark:bg-pond-800">
         {tooltip}
@@ -31,7 +31,7 @@ function Chip({ ok, children, tooltip }: { ok?: boolean; children: React.ReactNo
   return (
     <div className="group relative">
       <div
-        className={`flex min-w-[5rem] flex-col rounded-xl px-3 py-2 ring-1 ${
+        className={`flex w-24 flex-col rounded-xl px-3 py-2 ring-1 ${
           ok
             ? 'bg-emerald-50 text-emerald-900 ring-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-100 dark:ring-emerald-700/40'
             : 'bg-pond-50 text-pond-700 ring-pond-200 dark:bg-pond-800/40 dark:text-pond-200 dark:ring-pond-700/40'
