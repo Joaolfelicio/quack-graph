@@ -69,6 +69,7 @@ export function App() {
   const showDuck = new URLSearchParams(window.location.search).get('duck') !== '0';
   const [soundEnabled, setSoundEnabled] = useState(() => readBool(LS.sound, false));
   const [mobileSettingsOpen, setMobileSettingsOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const { state, actions, toggle: togglePlay } = useGraphRunner({
     initialAlgorithmId: parseInitialAlgo(),
@@ -79,8 +80,16 @@ export function App() {
 
   const algo = ALGORITHMS_BY_ID[state.algorithmId];
 
+  useEffect(() => {
+    if (copied) {
+      const t = setTimeout(() => setCopied(false), 2000);
+      return () => clearTimeout(t);
+    }
+  }, [copied]);
+
   const handleShare = useCallback(() => {
     try { navigator.clipboard?.writeText(window.location.href)?.catch(() => {}); } catch { /* clipboard unavailable */ }
+    setCopied(true);
   }, []);
 
   const handleRegenerate = useCallback(() => {
@@ -181,14 +190,24 @@ export function App() {
           <button
             type="button"
             onClick={handleShare}
-            title="Copy link — algorithm &amp; graph saved to URL"
-            aria-label="Copy share link — algorithm and graph saved to URL"
+            aria-label="Copy share link"
             className="group relative flex h-10 w-10 items-center justify-center rounded-full bg-white/70 text-pond-800 shadow-soft ring-1 ring-pond-200/60 backdrop-blur transition-all hover:bg-white active:scale-95 dark:bg-pond-800/70 dark:text-pond-100 dark:ring-pond-700/60 dark:hover:bg-pond-800"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-[18px] w-[18px] transition-transform group-hover:rotate-12">
-              <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
-              <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
-            </svg>
+            {copied ? (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-[18px] w-[18px] text-emerald-500">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-[18px] w-[18px] transition-transform group-hover:rotate-12">
+                <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
+                <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
+              </svg>
+            )}
+            {copied && (
+              <span className="absolute -top-10 left-1/2 z-50 -translate-x-1/2 rounded-lg bg-pond-900 px-2 py-1 text-[10px] font-medium text-white shadow-lg dark:bg-pond-50 dark:text-pond-950">
+                Copied!
+              </span>
+            )}
           </button>
           <a
             href="https://github.com/Joaolfelicio/quack-graph"
@@ -223,9 +242,9 @@ export function App() {
               <div className="mt-3 flex flex-col gap-3">
                 <ComplexityBadges meta={algo.meta} />
                 <div className="flex flex-wrap gap-x-4 gap-y-1.5">
-                  {LEGEND_ITEMS.map(({ fill, stroke, label }) => (
+                  {LEGEND_ITEMS.map(({ fill, label }) => (
                     <span key={label} className="flex items-center gap-1.5 text-xs text-pond-600 dark:text-pond-300">
-                      <span className="inline-block h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: fill, border: `2px solid ${stroke}` }} />
+                      <span className="inline-block h-2.5 w-2.5 shrink-0 rounded-full opacity-80" style={{ backgroundColor: fill }} />
                       {label}
                     </span>
                   ))}
