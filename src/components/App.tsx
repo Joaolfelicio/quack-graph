@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ALGORITHMS_BY_ID } from '../algorithms';
 import { useDarkMode } from '../hooks/useDarkMode';
 import { useGraphRunner, type GraphSource } from '../hooks/useGraphRunner';
@@ -227,7 +227,7 @@ export function App() {
             )}
           </article>
 
-          <div className="flex-1 min-h-[360px] sm:min-h-[420px] lg:min-h-[480px] rounded-3xl border border-pond-200/60 bg-white/60 overflow-hidden shadow-soft backdrop-blur dark:border-pond-800/50 dark:bg-pond-900/50">
+          <div className="relative flex-1 min-h-[360px] sm:min-h-[420px] lg:min-h-[480px] rounded-3xl border border-pond-200/60 bg-white/60 overflow-hidden shadow-soft backdrop-blur dark:border-pond-800/50 dark:bg-pond-900/50">
             <Visualizer
               graph={state.graph}
               visual={state.visual}
@@ -236,10 +236,8 @@ export function App() {
               targetNode={state.target}
               onNodeClick={(id, shiftKey) => shiftKey ? actions.setTargetNode(id) : actions.setSourceNode(id)}
             />
+            <NodeInteractionHint />
           </div>
-          <p className="text-center text-[11px] text-pond-400 dark:text-pond-500">
-            Click node → source &nbsp;·&nbsp; Shift+click → target &nbsp;·&nbsp; Tab + Enter to navigate with keyboard
-          </p>
 
           {/* Topo order strip */}
           {state.visual.topoOrder.length > 0 && (
@@ -298,10 +296,68 @@ export function App() {
   );
 }
 
+function NodeInteractionHint() {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onMouseDown = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', onMouseDown);
+    return () => document.removeEventListener('mousedown', onMouseDown);
+  }, [open]);
+
+  return (
+    <div ref={ref} className="absolute bottom-3 right-3 z-10">
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        aria-label="Node interaction help"
+        aria-expanded={open}
+        className="flex h-6 w-6 items-center justify-center rounded-full bg-pond-100/80 text-pond-400 ring-1 ring-pond-200/60 backdrop-blur transition hover:bg-white hover:text-pond-600 dark:bg-pond-800/70 dark:text-pond-500 dark:ring-pond-700/60 dark:hover:bg-pond-800 dark:hover:text-pond-300"
+      >
+        <svg viewBox="0 0 24 24" width={12} height={12} fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+          <circle cx="12" cy="12" r="10" /><path d="M12 16v-4M12 8h.01" />
+        </svg>
+      </button>
+      {open && (
+        <div className="absolute bottom-full right-0 z-50 mb-2 w-52 rounded-xl bg-pond-900 p-3 text-xs text-white shadow-xl dark:bg-pond-800">
+          <p className="mb-1.5 font-semibold uppercase tracking-wide text-pond-400">Node interaction</p>
+          <div className="space-y-1 text-pond-200">
+            <div className="flex justify-between"><span>Set source</span><span className="text-pond-400">Click</span></div>
+            <div className="flex justify-between"><span>Set target</span><span className="text-pond-400">Shift+click</span></div>
+            <div className="flex justify-between"><span>Navigate</span><span className="text-pond-400">Tab</span></div>
+            <div className="flex justify-between"><span>Select</span><span className="text-pond-400">Enter / Space</span></div>
+          </div>
+          <div className="absolute -bottom-1.5 right-3 border-4 border-transparent border-t-pond-900 dark:border-t-pond-800" />
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ShortcutsButton() {
   const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onMouseDown = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    const onKeyDown = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('mousedown', onMouseDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', onMouseDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [open]);
+
   return (
-    <div className="relative shrink-0">
+    <div ref={ref} className="relative shrink-0">
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
@@ -314,19 +370,16 @@ function ShortcutsButton() {
         </svg>
       </button>
       {open && (
-        <>
-          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute bottom-full right-0 z-50 mb-2 w-48 rounded-xl bg-pond-900 p-3 text-xs text-white shadow-xl dark:bg-pond-800">
-            <p className="mb-1.5 font-semibold uppercase tracking-wide text-pond-400">Shortcuts</p>
-            <div className="space-y-1 text-pond-200">
-              <div className="flex justify-between"><span>Play / pause</span><kbd className="rounded bg-pond-700 px-1 font-mono">Space</kbd></div>
-              <div className="flex justify-between"><span>Step 1</span><kbd className="rounded bg-pond-700 px-1 font-mono">← →</kbd></div>
-              <div className="flex justify-between"><span>Step 10</span><kbd className="rounded bg-pond-700 px-1 font-mono">⇧← →</kbd></div>
-              <div className="flex justify-between"><span>Reset</span><kbd className="rounded bg-pond-700 px-1 font-mono">R</kbd></div>
-            </div>
-            <div className="absolute -bottom-1.5 right-3 border-4 border-transparent border-t-pond-900 dark:border-t-pond-800" />
+        <div className="absolute bottom-full right-0 z-50 mb-2 w-48 rounded-xl bg-pond-900 p-3 text-xs text-white shadow-xl dark:bg-pond-800">
+          <p className="mb-1.5 font-semibold uppercase tracking-wide text-pond-400">Shortcuts</p>
+          <div className="space-y-1 text-pond-200">
+            <div className="flex justify-between"><span>Play / pause</span><kbd className="rounded bg-pond-700 px-1 font-mono">Space</kbd></div>
+            <div className="flex justify-between"><span>Step 1</span><kbd className="rounded bg-pond-700 px-1 font-mono">← →</kbd></div>
+            <div className="flex justify-between"><span>Step 10</span><kbd className="rounded bg-pond-700 px-1 font-mono">⇧← →</kbd></div>
+            <div className="flex justify-between"><span>Reset</span><kbd className="rounded bg-pond-700 px-1 font-mono">R</kbd></div>
           </div>
-        </>
+          <div className="absolute -bottom-1.5 right-3 border-4 border-transparent border-t-pond-900 dark:border-t-pond-800" />
+        </div>
       )}
     </div>
   );
