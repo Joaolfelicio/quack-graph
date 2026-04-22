@@ -69,7 +69,6 @@ export function App() {
   const showDuck = new URLSearchParams(window.location.search).get('duck') !== '0';
   const [soundEnabled, setSoundEnabled] = useState(() => readBool(LS.sound, false));
   const [mobileSettingsOpen, setMobileSettingsOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
 
   const { state, actions, toggle: togglePlay } = useGraphRunner({
     initialAlgorithmId: parseInitialAlgo(),
@@ -82,8 +81,6 @@ export function App() {
 
   const handleShare = useCallback(() => {
     try { navigator.clipboard?.writeText(window.location.href)?.catch(() => {}); } catch { /* clipboard unavailable */ }
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
   }, []);
 
   const handleRegenerate = useCallback(() => {
@@ -177,19 +174,14 @@ export function App() {
           <button
             type="button"
             onClick={handleShare}
-            aria-label="Copy share link"
+            title="Copy link — algorithm &amp; graph saved to URL"
+            aria-label="Copy share link — algorithm and graph saved to URL"
             className="group relative flex h-10 w-10 items-center justify-center rounded-full bg-white/70 text-pond-800 shadow-soft ring-1 ring-pond-200/60 backdrop-blur transition-all hover:bg-white active:scale-95 dark:bg-pond-800/70 dark:text-pond-100 dark:ring-pond-700/60 dark:hover:bg-pond-800"
           >
-            {copied ? (
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-[18px] w-[18px] text-emerald-500">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-            ) : (
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-[18px] w-[18px] transition-transform group-hover:rotate-12">
-                <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
-                <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
-              </svg>
-            )}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-[18px] w-[18px] transition-transform group-hover:rotate-12">
+              <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
+              <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
+            </svg>
           </button>
           <a
             href="https://github.com/Joaolfelicio/quack-graph"
@@ -245,6 +237,9 @@ export function App() {
               onNodeClick={(id, shiftKey) => shiftKey ? actions.setTargetNode(id) : actions.setSourceNode(id)}
             />
           </div>
+          <p className="text-center text-[11px] text-pond-400 dark:text-pond-500">
+            Click node → source &nbsp;·&nbsp; Shift+click → target &nbsp;·&nbsp; Tab + Enter to navigate with keyboard
+          </p>
 
           {/* Topo order strip */}
           {state.visual.topoOrder.length > 0 && (
@@ -293,13 +288,6 @@ export function App() {
           <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
         </svg>
       </button>
-
-      {copied && (
-        <div className="fixed right-4 top-16 z-[200] w-44 rounded-lg bg-pond-900 px-3 py-2 text-center text-[10px] font-medium leading-snug text-white shadow-xl dark:bg-pond-800">
-          <span className="block font-semibold text-emerald-400">Copied!</span>
-          <span className="block text-pond-400 dark:text-pond-300">Algo &amp; graph saved — step position is not</span>
-        </div>
-      )}
 
       <MobileSettingsSheet
         open={mobileSettingsOpen}
